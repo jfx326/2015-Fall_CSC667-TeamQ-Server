@@ -16,10 +16,13 @@ module WebServer
       @options = options
 
       httpd_file = File.open('config/httpd.conf', 'rb')
+      mime_file = File.open('config/mime.types', 'rb')
 
       @httpd_conf = HttpdConf.new(httpd_file)
+      @mime_types = MimeTypes.new(mime_file)
 
       httpd_file.close
+      mime_file.close
     end
 
     def start

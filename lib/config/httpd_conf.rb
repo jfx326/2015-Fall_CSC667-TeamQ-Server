@@ -14,22 +14,25 @@ module WebServer
 
       httpd_file_content.each_line do |line|      
         unless line[0] == '#'
-          property, value, valuepath = line.split(" ")   
+          property, value, value_path = line.split(" ")   
 
-          if value != nil and value[0] == '"' and value[-1] == '"'
-            value = value[1...-1]
-          end 
+          value = removeQuotes(value)
+          value_path = removeQuotes(value_path)
 
-          unless valuepath == nil
-            valuepath = valuepath[1...-1]
-          end 
-
-          assign(property, value, valuepath)
+          assign(property, value, value_path)
         end
       end 
     end
 
-    def assign(property, value, valuepath)
+    def removeQuotes(val)
+      if val != nil and val[0] == '"' and val[-1] == '"'
+        val = val[1...-1]
+      end 
+
+      val
+    end
+
+    def assign(property, value, value_path)
       case property
         when "ServerRoot"
           @server_root = value
@@ -45,10 +48,10 @@ module WebServer
           @access_file_name = value
         when "ScriptAlias"
           @script_aliases.push(value)
-          @script_alias_path[value] = valuepath
+          @script_alias_path[value] = value_path
         when "Alias"
           @aliases.push(value)
-          @alias_path[value] = valuepath
+          @alias_path[value] = value_path
       end
     end
 

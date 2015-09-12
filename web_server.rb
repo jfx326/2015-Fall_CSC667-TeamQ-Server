@@ -5,11 +5,21 @@ end
 
 module WebServer
   class Server
+    attr_reader :options, :http_conf, :mime_types
+
     DEFAULT_PORT = 2468
 
     def initialize(options={})
       # Set up WebServer's configuration files and logger here
-      # Do any preparation necessary to allow threading multiple requests
+      # Do any preparation necessary to allow threading multiple requests"    
+
+      @options = options
+
+      httpd_file = File.open('config/httpd.conf', 'rb')
+
+      @httpd_conf = HttpdConf.new(httpd_file)
+
+      httpd_file.close
     end
 
     def start

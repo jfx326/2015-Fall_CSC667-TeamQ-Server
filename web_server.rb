@@ -5,7 +5,7 @@ end
 
 module WebServer
   class Server
-    attr_reader :options, :http_conf, :mime_types
+    attr_reader :options
 
     DEFAULT_PORT = 2468
 
@@ -18,8 +18,8 @@ module WebServer
       httpd_file = File.open('config/httpd.conf', 'rb')
       mime_file = File.open('config/mime.types', 'rb')
 
-      @httpd_conf = HttpdConf.new(httpd_file)
-      @mime_types = MimeTypes.new(mime_file)
+      @options[:httpd_conf] = HttpdConf.new(httpd_file)
+      @options[:mime_types] = MimeTypes.new(mime_file)
 
       httpd_file.close
       mime_file.close
@@ -28,6 +28,17 @@ module WebServer
     def start
       # Begin your 'infinite' loop, reading from the TCPServer, and
       # processing the requests as connections are made
+
+      # port = options[:httpd_conf].port || DEFAULT_PORT
+      # @server ||= TCPServer.open(port)
+
+      # loop do 
+      #   client = @server.accept
+
+      #   puts client
+
+      #   client.close
+      # end 
     end
 
     private

@@ -41,6 +41,7 @@ module WebServer
         socket = @server.accept
 
         request = Request.new(socket)
+        resource = Resource.new(request, @options[:httpd_conf], @options[:mime_types])
 
         socket.close
       end 

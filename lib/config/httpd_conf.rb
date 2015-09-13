@@ -69,7 +69,7 @@ module WebServer
 
     # Returns the directory index file
     def directory_index
-      @directory_index
+      @directory_index || "index.html"
     end
 
     # Returns the *integer* value of Listen

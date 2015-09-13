@@ -12,9 +12,9 @@ module WebServer
       @headers = Hash.new
       @body = String.new
       @params = Hash.new
+      @socket = socket
 
-      @socket = socket.to_a  
-      parse      
+      parse
     end
 
     # I've added this as a convenience method, see TODO (This is called from the logger
@@ -33,27 +33,30 @@ module WebServer
     def parse
       parse_request_line
 
-      #TODO: THIS SHOULD BE \r\n
-      header_end = @socket.index("\n")
-
-      @socket[1...header_end].each do |header_line|
-        parse_header(header_line)
+      @socket.each do |line|
+        break if line == "\r\n"
+        parse_header(line)
       end
 
-      @socket[header_end+1..-1].each do |body_line|
-        parse_body(body_line)
+      if headers['CONTENT_LENGTH'] != nil
+        @socket.each do |body_line|
+          parse_body(body_line)
+        end
+
+        @body.chomp!
       end
 
-      @body.chomp!
     end
 
     # The following lines provide a suggestion for implementation - feel free
     # to erase and create your own...
     def next_line
+      @socket.gets
     end
 
     def parse_request_line
-      @http_method, @uri, @version = @socket[0].split(" ")
+      @http_method, @uri, @version = @socket.gets.split(" ")
+
       parse_params
     end
 
@@ -71,11 +74,13 @@ module WebServer
       @body = @body + body_line
     end
 
-    def parse_params      
-      @uri, query = @uri.split("?")
+    def parse_params
+      if @uri.include? "?"
+        @uri, query = @uri.split("?")
 
-      key, value = query.split("=")
-      @params[key] = value
+        key, value = query.split("=")
+        @params[key] = value
+      end
     end
   end
 end

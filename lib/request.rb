@@ -14,7 +14,10 @@ module WebServer
       @params = Hash.new
       @socket = socket
 
-      parse
+      #TODO: Check this weird edge case
+      unless @socket == nil
+        parse
+      end
     end
 
     # I've added this as a convenience method, see TODO (This is called from the logger

@@ -9,13 +9,17 @@ module WebServer
     end
 
     def resolve
-      path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
-      
-      if !@request.uri.include? "."
-        path = path + "/" + @conf.directory_index
+      @full_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
+
+      unless @request.uri.include? "."
+        if @request.uri[-1] != "/"
+          @full_path << "/"
+        end
+
+        @full_path << @conf.directory_index
       end
 
-      path
+      return @full_path
     end
 
     def script_aliased? 

@@ -24,7 +24,26 @@ module WebServer
 
     module Factory
       def self.create(resource)
-        Response::Base.new(resource)
+        serve = resource.serve
+
+        case serve
+          when String
+            Response::Base.new(resource, serve)
+          when 201
+            Response::SuccessfullyCreated.new(resource)
+          when 304
+            Response::NotModified.new(resource)
+          when 400
+            Response::BadRequest.new(resource)
+          when 401
+            Response::Unauthorized.new(resource)
+          when 403
+            Response::Forbidden.new(resource)
+          when 404
+            Response::NotFound.new(resource)
+          when 500
+            Response::ServerError.new(resource)
+        end
       end
 
       def self.error(resource, error_object)

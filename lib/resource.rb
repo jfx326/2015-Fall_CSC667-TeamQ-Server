@@ -22,6 +22,28 @@ module WebServer
       return @full_path
     end
 
+    def serve
+      if resolve
+        if ['GET', 'HEAD', 'POST',].include? request.http_method
+          if File.exist?(@full_path)
+            file = File.open(@full_path, "rb")
+            contents = file.read
+            file.close
+
+            return contents
+          else
+            404
+          end
+        elsif 'PUT' == request.http_method
+
+        else
+          400
+        end
+      else
+        500
+      end
+    end
+
     def script_aliased? 
       @conf.script_aliases.each do |script_alias|
         if @request.uri.include? script_alias
@@ -52,6 +74,12 @@ module WebServer
     #TODO: This is a bit iffy
     def protected?
       File.exist?(@conf.access_file_name)
+    end
+
+    def content_type
+      ext = @full_path.split(".").last
+
+      return mimes.for_extension(ext)
     end
   end
 end

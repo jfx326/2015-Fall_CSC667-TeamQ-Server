@@ -41,7 +41,7 @@ module WebServer
         parse_header(line)
       end
 
-      if headers['CONTENT_LENGTH'] != nil
+      if @headers['CONTENT_LENGTH'].to_i > 0
         @socket.each do |body_line|
           parse_body(body_line)
         end

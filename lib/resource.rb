@@ -1,6 +1,6 @@
 module WebServer
   class Resource
-    attr_reader :request, :conf, :mimes
+    attr_reader :request, :conf, :mimes, :contents
 
     def initialize(request, httpd_conf, mimes)
       @request = request
@@ -23,24 +23,28 @@ module WebServer
     end
 
     def serve
-      if resolve
-        if ['GET', 'HEAD', 'POST',].include? request.http_method
-          if File.exist?(@full_path)
-            file = File.open(@full_path, "rb")
-            contents = file.read
-            file.close
+      case request.http_method
+        when 'GET'
+          retrieve
+        when 'HEAD'
+          retrieve
+        when 'POST'
 
-            return contents
-          else
-            404
-          end
-        elsif 'PUT' == request.http_method
-
+        when 'PUT'
         else
           400
-        end
+      end
+    end
+
+    def retrieve
+      if File.exist?(@full_path)
+        file = File.open(@full_path, "rb")
+        @contents = file.read
+        file.close
+
+        return 200
       else
-        500
+        404
       end
     end
 

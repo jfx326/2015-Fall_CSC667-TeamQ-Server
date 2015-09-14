@@ -44,7 +44,7 @@ module WebServer
         request = Request.new(socket)
         puts "Request created..."
         resource = Resource.new(request, @options[:httpd_conf], @options[:mime_types])
-        puts "Requesting resource #{request.uri}"
+        puts "REQUEST: #{request.http_method} #{request.uri}"
         response = Response::Factory.create(resource)
         puts "Response created..."
 

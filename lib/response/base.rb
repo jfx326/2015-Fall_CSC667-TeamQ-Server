@@ -7,13 +7,11 @@ module WebServer
       attr_reader :version, :code, :body
 
       def initialize(resource, options={})
-        @resource = resource
         @version = DEFAULT_HTTP_VERSION #TODO: Should this be derived from resource/request
         @code = 200
+        @body = resource.contents
 
-        if options != nil
-          @body = options
-        end
+        @resource = resource #TODO: Need to figure out how the encapsulation works with this being passed around everywhere
       end
 
       def to_s
@@ -23,18 +21,26 @@ module WebServer
           s << header[0] + ": " + header[1] + "\r\n"
         end
 
-        if @body != nil
-          s << "Content-Type: #{@resource.content_type}\n"
-          s << "Content-Length: #{content_length}\n"
-          s << "Connection: close\n"
-          s << "\r\n"
-          s << @body
-        else
-          s << "Connection: close\r\n"
-        end
+        s << message
       end
 
       def message
+        msg = String.new
+
+        #TODO: are calls like this good practice?
+        if @resource.request.http_method == 'HEAD'
+          msg << "Content-Type: #{@resource.content_type}\n"
+          msg << "Content-Length: #{content_length}\n"
+          msg << "Connection: close\n\r\n"
+        else
+          msg << "Content-Type: #{@resource.content_type}\n"
+          msg << "Content-Length: #{content_length}\n"
+          msg << "Connection: close\n"
+          msg << "\r\n"
+          msg << @body
+        end
+
+        return msg
       end
 
       def content_length

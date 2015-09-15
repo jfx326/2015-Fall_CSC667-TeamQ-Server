@@ -31,8 +31,9 @@ module WebServer
         when 'POST'
 
         when 'PUT'
+          create
         else
-          400
+          403
       end
     end
 
@@ -45,6 +46,22 @@ module WebServer
         return 200
       else
         404
+      end
+    end
+
+    def create
+      #TODO: Check if this is append if exists or create
+      unless File.exist?(@full_path)
+        #TODO: Could this fail, if not, remove the if block
+        if file = File.new(@full_path, "w")
+          file.puts @request.body
+          file.close
+
+          return 201
+        end
+      else
+        #TODO: check if this is right of if the request should overwrite
+        return 400
       end
     end
 

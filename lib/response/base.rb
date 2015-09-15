@@ -27,17 +27,20 @@ module WebServer
       def message
         msg = String.new
 
-        #TODO: are calls like this good practice?
-        if @resource.request.http_method == 'HEAD'
-          msg << "Content-Type: #{@resource.content_type}\n"
-          msg << "Content-Length: #{content_length}\n"
-          msg << "Connection: close\n\r\n"
-        else
-          msg << "Content-Type: #{@resource.content_type}\n"
-          msg << "Content-Length: #{content_length}\n"
-          msg << "Connection: close\n"
-          msg << "\r\n"
-          msg << @body
+        case @resource.request.http_method
+          when "HEAD"
+            msg << "Content-Type: #{@resource.content_type}\n"
+            msg << "Content-Length: #{content_length}\n"
+            msg << "Connection: close\n\r\n"
+          when "GET"
+            msg << "Content-Type: #{@resource.content_type}\n"
+            msg << "Content-Length: #{content_length}\n"
+            msg << "Connection: close\n"
+            msg << "\r\n"
+            msg << @body
+          when "PUT"
+            msg << "Location: http://localhost:#{@resource.conf.port}#{@resource.request.uri}\r\n"
+          when "POST"
         end
 
         return msg

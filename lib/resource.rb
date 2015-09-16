@@ -33,19 +33,25 @@ module WebServer
         when 'PUT'
           create
         else
-          403
+          return 403
       end
     end
 
     def retrieve
-      if File.exist?(@full_path)
-        file = File.open(@full_path, "rb")
-        @contents = file.read
-        file.close
+      authorized = authorize
 
-        return 200
+      if authorize == 200
+        if File.exist?(@full_path)
+          file = File.open(@full_path, "rb")
+          @contents = file.read
+          file.close
+
+          return 200
+        else
+          return 404
+        end
       else
-        404
+        return authorized
       end
     end
 
@@ -62,6 +68,29 @@ module WebServer
       else
         #TODO: check if this is right of if the request should overwrite
         return 400
+      end
+    end
+
+    def authorize
+      if htaccess_path = protected?
+        authorization = request.headers['AUTHORIZATION']
+
+        if authorization != nil
+          authorization = authorization.split(" ").last
+
+          htaccess_file = File.open(htaccess_path)
+          htaccess = Htaccess.new(htaccess_file)
+
+          if htaccess.authorized?(authorization)
+            return 200
+          else
+            return 403
+          end
+        else
+          return 401
+        end
+      else
+        return 200
       end
     end
 
@@ -92,9 +121,11 @@ module WebServer
       return false
     end
 
-    #TODO: This is a bit iffy
     def protected?
-      File.exist?(@conf.access_file_name)
+      @full_path ||= resolve
+
+      checkPath = File.dirname(@full_path) + "/" + @conf.access_file_name
+      return File.exist?(checkPath) ? checkPath : false
     end
 
     def content_type

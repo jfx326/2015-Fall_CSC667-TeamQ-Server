@@ -1,3 +1,6 @@
+require 'digest'
+require 'base64'
+
 module WebServer
   class Htaccess
     attr_reader :auth_user_file, :auth_type, :auth_name, :require_user

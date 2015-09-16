@@ -28,19 +28,19 @@ module WebServer
         msg = String.new
 
         case @resource.request.http_method
-          when "HEAD"
-            msg << "Content-Type: #{@resource.content_type}\n"
-            msg << "Content-Length: #{content_length}\n"
-            msg << "Connection: close\n\r\n"
-          when "GET"
+          when "GET", "POST"
             msg << "Content-Type: #{@resource.content_type}\n"
             msg << "Content-Length: #{content_length}\n"
             msg << "Connection: close\n"
             msg << "\r\n"
             msg << @body
+          when "HEAD"
+            msg << "Content-Type: #{@resource.content_type}\n"
+            msg << "Content-Length: #{content_length}\n"
+            msg << "Connection: close\n\r\n"
           when "PUT"
+            #TODO: I think this needs a body as well??"
             msg << "Location: http://localhost:#{@resource.conf.port}#{@resource.request.uri}\r\n"
-          when "POST"
         end
 
         return msg

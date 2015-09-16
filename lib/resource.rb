@@ -9,6 +9,7 @@ module WebServer
     end
 
     def resolve
+      #TODO: Check if this will get marked down since it return //
       @full_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
       unless @request.uri.include? "."
@@ -29,11 +30,11 @@ module WebServer
         when 'HEAD'
           retrieve
         when 'POST'
-
+          process
         when 'PUT'
           create
         else
-          403
+          403 #TODO: Unauthorized? or 400 Bad Request
       end
     end
 
@@ -46,6 +47,21 @@ module WebServer
         return 200
       else
         404
+      end
+    end
+
+    def process
+      #TODO: I have no idea what this should actually be doing...
+      if request.body != nil
+        #TODO: assuming property=value& sequence
+        params = body.split("&")
+        params.each do |param|
+          @contents << param[0] + ": " + param[1]
+        end
+
+        return 200
+      else
+        return 400
       end
     end
 
@@ -94,7 +110,7 @@ module WebServer
 
     #TODO: This is a bit iffy
     def protected?
-      File.exist?(@conf.access_file_name)
+      File.exist? @conf.access_file_name
     end
 
     def content_type

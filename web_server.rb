@@ -39,20 +39,9 @@ module WebServer
       puts "Starting server on localhost:#{port}\n\n"
       loop do 
         socket = @server.accept
-        puts "Incoming connection..."
-
-        request = Request.new(socket)
-        puts "Request created..."
-        resource = Resource.new(request, @options[:httpd_conf], @options[:mime_types])
-        puts "REQUEST: #{request.http_method} #{request.uri}"
-        response = Response::Factory.create(resource)
-        puts "Response created..."
-
-        socket.write response.to_s
-        puts "Response transmitted..."
-
-        socket.close
-        puts "Connection terminated\n\n"
+        thread = Thread.new do
+          Worker.new(socket, self)
+        end
       end 
     end
 

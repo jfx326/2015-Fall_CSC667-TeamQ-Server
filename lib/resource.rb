@@ -33,19 +33,28 @@ module WebServer
         when 'PUT'
           create
         else
-          403
+          return 403
       end
     end
 
     def retrieve
-      if File.exist?(@full_path)
-        file = File.open(@full_path, "rb")
-        @contents = file.read
-        file.close
+      resolve
 
-        return 200
+      @auth_browser = AuthBrowser.new(@full_path, @conf.access_file_name, @conf.document_root)
+      authorized = @auth_browser.protected? ? authorize : 200
+
+      if authorized == 200
+        if File.exist?(@full_path)
+          file = File.open(@full_path, "rb")
+          @contents = file.read
+          file.close
+
+          return 200
+        else
+          return 404
+        end
       else
-        404
+        return authorized
       end
     end
 
@@ -65,17 +74,20 @@ module WebServer
       end
     end
 
-    def script_aliased? 
-      @conf.script_aliases.each do |script_alias|
-        if @request.uri.include? script_alias
-          sub = @conf.script_alias_path(script_alias)
-          path = @request.uri.sub(script_alias, sub)
+    def authorize
+      authorization = request.headers['AUTHORIZATION']
 
-          return path
+      if authorization != nil
+        encrypted_string = authorization.split(" ").last
+
+        if @auth_browser.authorized?(encrypted_string)
+          return 200
+        else
+          return 403
         end
-      end    
-
-      return false
+      else
+        return 401
+      end
     end
 
     #TODO: Check if this should exist. Seriously schould combine the two
@@ -92,9 +104,17 @@ module WebServer
       return false
     end
 
-    #TODO: This is a bit iffy
-    def protected?
-      File.exist?(@conf.access_file_name)
+    def script_aliased? 
+      @conf.script_aliases.each do |script_alias|
+        if @request.uri.include? script_alias
+          sub = @conf.script_alias_path(script_alias)
+          path = @request.uri.sub(script_alias, sub)
+
+          return path
+        end
+      end    
+
+      return false
     end
 
     def content_type

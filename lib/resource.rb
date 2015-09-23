@@ -38,9 +38,12 @@ module WebServer
     end
 
     def retrieve
-      authorized = authorize
+      resolve
 
-      if authorize == 200
+      @auth_browser = AuthBrowser.new(@full_path, @conf.access_file_name, @conf.document_root)
+      authorized = @auth_browser.protected? ? authorize : 200
+
+      if authorized == 200
         if File.exist?(@full_path)
           file = File.open(@full_path, "rb")
           @contents = file.read
@@ -72,39 +75,19 @@ module WebServer
     end
 
     def authorize
-      if htaccess_path = protected?
-        authorization = request.headers['AUTHORIZATION']
+      authorization = request.headers['AUTHORIZATION']
 
-        if authorization != nil
-          authorization = authorization.split(" ").last
+      if authorization != nil
+        encrypted_string = authorization.split(" ").last
 
-          htaccess_file = File.open(htaccess_path)
-          htaccess = Htaccess.new(htaccess_file)
-
-          if htaccess.authorized?(authorization)
-            return 200
-          else
-            return 403
-          end
+        if @auth_browser.authorized?(encrypted_string)
+          return 200
         else
-          return 401
+          return 403
         end
       else
-        return 200
+        return 401
       end
-    end
-
-    def script_aliased? 
-      @conf.script_aliases.each do |script_alias|
-        if @request.uri.include? script_alias
-          sub = @conf.script_alias_path(script_alias)
-          path = @request.uri.sub(script_alias, sub)
-
-          return path
-        end
-      end    
-
-      return false
     end
 
     #TODO: Check if this should exist. Seriously schould combine the two
@@ -121,11 +104,17 @@ module WebServer
       return false
     end
 
-    def protected?
-      @full_path ||= resolve
+    def script_aliased? 
+      @conf.script_aliases.each do |script_alias|
+        if @request.uri.include? script_alias
+          sub = @conf.script_alias_path(script_alias)
+          path = @request.uri.sub(script_alias, sub)
 
-      checkPath = File.dirname(@full_path) + "/" + @conf.access_file_name
-      return File.exist?(checkPath) ? checkPath : false
+          return path
+        end
+      end    
+
+      return false
     end
 
     def content_type

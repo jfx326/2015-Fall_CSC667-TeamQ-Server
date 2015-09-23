@@ -23,6 +23,11 @@ To run the web server (nothing will happen until you implement...):
 ruby web_server.rb
 ```
 
+To remove httpd.conf from being tracked, but, persist local changes
+```
+git update-index --skip-worktree config/httpd.conf
+```
+
 ## Creating Branches
 
 Forget a command? Try

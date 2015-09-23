@@ -11,44 +11,50 @@ module WebServer
     # log_file_path already defined at httpd_conf.conf
     def initialize(log_file_path, options={})
       @options = options
+      @message = String.new
       
       unless @options.has_key?(:echo) # please see TODO above
         @options[:echo] = File.open(log_file_path, 'a')
       end
-      
-      message = Time.now.strftime('%a, %e %b %Y %H:%M:%S %Z') + "\r\n"
-      message << "Connection opened.\r\n"
-      puts message
-      @options[:echo].puts message
     end
 
     # Log a message using the information from Request and 
     # Response objects
+    
+    # CLF (from http://httpd.apache.org/docs/2.2/mod/mod_log_config.html)
+    # "%h %l %u %t \"%r\" %>s %b"
+    # %h	Remote host
+    # %l	Remote logname (from identd, if supplied). This will return a dash
+    #     unless mod_ident is present and IdentityCheck is set On.
+    # %u	Remote user (from auth; may be bogus if return status (%s) is 401)
+    # %t	Time the request was received (standard english format)
+    # %r	First line of request
+    # %s	Status. 
+    # %b	Size of response in bytes, excluding HTTP headers. In CLF format,
+    #     i.e. a '-' rather than a 0 when no bytes are sent.
+    
+    # TODO: what to put for %l/%u? request.user_id used for %u
     def log(request, response)
-      message = "User #{request.user_id} requested with "
-      message << "HTTP/#{request.version} at #{request.uri}:\r\n"
-      message << "Headers:\r\n"
-      request.headers.each do |header, value|
-        message << "#{header}: #{value}\r\n"
+      @message = "#{request.socket.peeraddr[3]} "
+      @message << "#{request.user_id} "
+      @message << "[" + Time.now.strftime('%a, %F, %T %z') + "] "
+      @message << "\"#{request.http_method} #{request.uri} #{request.version}\" "
+      @message << "#{response.code} "
+      
+      if response.content_length == 0
+        @message << "-"
+      else
+        @message << "#{response.content_length}"
       end
       
-      message << "Options:\r\n"
-      request.params.each do |option, value|
-        message << "#{option}: #{value}\r\n"
-      end
-      
-      message << "Server responded with #{response.code}.\r\n"
-      
-      puts message
-      @options[:echo].puts message
+      @message << "\r\n"
     end
 
     # Allow the consumer of this class to flush and close the 
     # log file
     def close
-      message = "Connection closed.\r\n"
-      puts message
-      @options[:echo].puts message
+      puts @message
+      @options[:echo].puts @message
       @options[:echo].close
     end
   end

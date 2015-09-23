@@ -2,6 +2,7 @@
 module WebServer
   class Request
     attr_accessor :http_method, :uri, :version, :headers, :body, :params
+    attr_reader :socket
 
     # Request creation receives a reference to the socket over which
     # the client has connected

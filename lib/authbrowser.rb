@@ -57,7 +57,6 @@ module WebServer
 
       directories.reverse.each do |path| 
         check_path << path + "/"
-        puts check_path
         is_protected = File.exist?(check_path + @access_file_name)
 
         if is_protected

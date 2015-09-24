@@ -7,7 +7,7 @@ describe WebServer::Request do
 GET /?param1=one HTTP/1.1
 Host: localhost
 Content-Length: 40
-
+\r
 This is the body.
 With multiple lines...
       CONTENT

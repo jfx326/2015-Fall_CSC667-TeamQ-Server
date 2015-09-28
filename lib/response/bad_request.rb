@@ -4,7 +4,7 @@ module WebServer
     class BadRequest < Base
       def initialize(resource, options={})
         super(resource)
-        @code = 204
+        @code = 400
 
         @body = "<html><body><h1>400 - Bad Request</h1></body></html>"
       end

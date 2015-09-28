@@ -25,25 +25,23 @@ module WebServer
     module Factory
 
       def self.create(resource)
-        if File.exist?(resource.resolve)
-          case resource.process
-            when 200
-              Response::Base.new(resource)
-            when 201
-              Response::SuccessfullyCreated.new(resource)
-            when 304
-              Response::NotModified.new(resource)
-            when 400
-              Response::BadRequest.new(resource)
-            when 401
-              Response::Unauthorized.new(resource)
-            when 403
-              Response::Forbidden.new(resource)
-            else
-              Response::ServerError.new(resource)
-          end
-        else
-          Response::NotFound.new(resource)
+        case resource.process
+          when 200
+            Response::Base.new(resource)
+          when 201
+            Response::SuccessfullyCreated.new(resource)
+          when 304
+            Response::NotModified.new(resource)
+          when 400
+            Response::BadRequest.new(resource)
+          when 401
+            Response::Unauthorized.new(resource)
+          when 403
+            Response::Forbidden.new(resource)
+          when 404
+            Response::NotFound.new(resource)
+          else
+            Response::ServerError.new(resource)
         end
       end
 

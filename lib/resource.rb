@@ -25,23 +25,30 @@ module WebServer
     end
 
     def process
-      @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
+      resolve
 
+      @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
       authorized = @auth_browser.protected? ? authorize : 200
 
       if authorized == 200
-        case request.http_method
-          when 'GET', 'HEAD', 'POST'
-            retrieve
-          when 'PUT'
-            create
-          when 'DELETE'
-            delete
-          else
-            return 403
-        end
+        serve
       else
         return authorized
+      end
+    end
+
+    def serve
+      case @request.http_method
+        when 'GET', 'HEAD', 'POST'
+          File.exist?(@absolute_path) ? retrieve : 404
+        when 'PUT'
+          #TODO: Could this fail, if not, remove the if block
+          #TODO: check if this is right of if the request should overwrite
+          !File.exist?(@absolute_path) ? create : 400
+        when 'DELETE'
+          File.exist?(@absolute_path) ? delete : 404
+        else
+          return 403
       end
     end
 
@@ -70,23 +77,15 @@ module WebServer
     end
 
     def create
-      #TODO: Check if this is append if exists or create
-      unless File.exist?(@absolute_path)
-        #TODO: Could this fail, if not, remove the if block
-        if file = File.new(@absolute_path, "w")
-          file.puts @request.body
-          file.close
+      if file = File.new(@absolute_path, "w")
+        file.puts @request.body
+        file.close
 
-          return 201
-        end
-      else
-        #TODO: check if this is right of if the request should overwrite
-        return 400
+        return 201
       end
     end
 
     def delete
-
     end
 
     def authorize

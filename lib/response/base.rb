@@ -14,10 +14,10 @@ module WebServer
       end
 
       def head
-        head = "#{@version} #{@code} #{RESPONSE_CODES.fetch(@code)}\r\n"
+        head = "#{@version} #{@code} #{RESPONSE_CODES.fetch(@code)}\n"
 
         Response.default_headers.each do |header|
-          head << header[0] + ": " + header[1] + "\r\n"
+          head << header[0] + ": " + header[1] + "\n"
         end
 
         return head

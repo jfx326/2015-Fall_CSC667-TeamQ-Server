@@ -19,7 +19,7 @@ module WebServer
     def self.default_headers
       {
         'Date' => Time.now.strftime('%a, %e %b %Y %H:%M:%S %Z'),
-        'Server' => 'John Roberts CSC 667'
+        'Server' => 'Team Q CSC 667'
       }
     end
 

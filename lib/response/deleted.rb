@@ -7,12 +7,8 @@ module WebServer
         @code = 204
       end
 
-      def to_s
-        s = head
-        s << "Connection: close\n"
-        s << "\r\n"
-
-        return s
+      def message
+        "Connection: close\n\r\n"
       end
     end
   end

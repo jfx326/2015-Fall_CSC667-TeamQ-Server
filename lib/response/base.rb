@@ -25,20 +25,23 @@ module WebServer
 
       def to_s
         s = head
+        s << message
 
-        unless @resource.script
-          s << message
-        else
-          s << script_message
-        end
+        return s
       end
 
       def message
+        return @resource.script ? script_message : default_message
+      end
+
+      def default_message
         msg = "Content-Type: #{content_type}\n"
         msg << "Content-Length: #{content_length}\n"
         msg << "Connection: close\n"
         msg << "\r\n"
-        msg << @resource.contents
+        msg << (@resource.contents || @body)
+
+        return msg
       end
 
       def script_message

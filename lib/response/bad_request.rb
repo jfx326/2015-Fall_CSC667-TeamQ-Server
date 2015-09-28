@@ -9,20 +9,8 @@ module WebServer
         @body = "<html><body><h1>400 - Bad Request</h1></body></html>"
       end
 
-      def to_s
-        s = head
-        s << "Connection: close\n"
-        s << "\r\n"
-
-        return s
-      end
-
-      def message
-        msg = "Content-Type: text/html\n"
-        msg << "Content-Length: #{content_length}\n"
-        msg << "Connection: close\n"
-        msg << "\r\n"
-        msg << @body
+      def content_type
+        return 'text/html'
       end
 
       def content_length

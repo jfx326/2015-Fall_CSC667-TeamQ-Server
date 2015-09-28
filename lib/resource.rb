@@ -65,24 +65,23 @@ module WebServer
     end
 
     def execute
-      begin
-        script  = IO.popen([env_var, @absolute_path])
-        script.write(@request.body)
-        @contents = script.read
+      script = IO.popen([env_var, @absolute_path])
+      script.write(@request.body)
+      @contents = script.read
 
-        return 200
-      rescue
-        return 500
-      end
+      return 200
+    rescue
+      return 500
     end
 
     def create
-      if file = File.new(@absolute_path, "w")
-        file.puts @request.body
-        file.close
+      file = File.new(@absolute_path, 'w')
+      file.puts @request.body
+      file.close
 
-        return 201
-      end
+      return 201
+    rescue
+      return 500
     end
 
     def delete
@@ -92,7 +91,7 @@ module WebServer
       authorization = request.headers['AUTHORIZATION']
 
       if authorization != nil
-        encrypted_string = authorization.split(" ").last
+        encrypted_string = authorization.split(' ').last
 
         if @auth_browser.authorized?(encrypted_string)
           return 200

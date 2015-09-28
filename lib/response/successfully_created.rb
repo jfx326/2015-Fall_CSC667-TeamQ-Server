@@ -6,6 +6,14 @@ module WebServer
         super(resource)
         @code = 201
       end
+
+      def to_s
+        s = head
+        s << "Connection: close\n"
+        s << "\r\n"
+
+        return s
+      end
     end
   end
 end

@@ -13,12 +13,18 @@ module WebServer
         @resource = resource #TODO: Need to figure out how the encapsulation works with this being passed around everywhere
       end
 
-      def to_s
-        s = "#{@version} #{@code} #{RESPONSE_CODES.fetch(@code)}\r\n"
+      def head
+        head = "#{@version} #{@code} #{RESPONSE_CODES.fetch(@code)}\r\n"
 
         Response.default_headers.each do |header|
-          s << header[0] + ": " + header[1] + "\r\n"
+          head << header[0] + ": " + header[1] + "\r\n"
         end
+
+        return head
+      end
+
+      def to_s
+        s = head
 
         unless @resource.script
           s << message
@@ -60,7 +66,7 @@ module WebServer
       end
 
       def content_length
-        return @resource.contents.length
+        return @resource.contents ? @resource.contents.length : 0
       end
     end
   end

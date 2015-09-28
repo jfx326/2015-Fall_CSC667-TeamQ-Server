@@ -14,9 +14,7 @@ module WebServer
 
         realm = realm.chomp("/").reverse.chomp("/").reverse
 
-        msg = "WWW-Authenticate: Basic realm=\"#{realm}\""
-
-        return msg
+        return "WWW-Authenticate: Basic realm=\"#{realm}\"\r\n"
       end
     end
   end

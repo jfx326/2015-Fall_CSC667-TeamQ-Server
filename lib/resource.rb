@@ -1,6 +1,6 @@
 module WebServer
   class Resource
-    attr_reader :request, :conf, :mimes, :contents
+    attr_reader :request, :conf, :mimes, :contents, :script
 
     def initialize(request, httpd_conf, mimes)
       @request = request
@@ -10,75 +10,70 @@ module WebServer
 
     def resolve
       #TODO: Check if this will get marked down since it return //
-      @full_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
+      @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
-      unless @request.uri.include? "."
+      #TODO: Why does or work here and || doesn't?
+      unless @request.uri.include? "." or @script
         if @request.uri[-1] != "/"
-          @full_path << "/"
+          @absolute_path << "/"
         end
 
-        @full_path << @conf.directory_index
+        @absolute_path << @conf.directory_index
       end
 
-      return @full_path
+      return @absolute_path
     end
 
-    def serve
-      case request.http_method
-        when 'GET'
-          retrieve
-        when 'HEAD'
-          retrieve
-        when 'POST'
-          process
-        when 'PUT'
-          create
-        else
-          return 403
-      end
-    end
+    def process
+      @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
 
-    def retrieve
-      resolve
-
-      @auth_browser = AuthBrowser.new(@full_path, @conf.access_file_name, @conf.document_root)
       authorized = @auth_browser.protected? ? authorize : 200
 
       if authorized == 200
-        if File.exist?(@full_path)
-          file = File.open(@full_path, "rb")
-          @contents = file.read
-          file.close
-
-          return 200
-        else
-          return 404
+        case request.http_method
+          when 'GET', 'HEAD', 'POST'
+            retrieve
+          when 'PUT'
+            create
+          when 'DELETE'
+            delete
+          else
+            return 403
         end
       else
         return authorized
       end
     end
 
-    def process
-      #TODO: I have no idea what this should actually be doing...
-      if request.body != nil
-        #TODO: assuming property=value& sequence
-        params = body.split("&")
-        params.each do |param|
-          @contents << param[0] + ": " + param[1]
-        end
+    def retrieve
+      if @script
+        execute
+      else
+        file = File.open(@absolute_path, "rb")
+        @contents = file.read
+        file.close
 
         return 200
-      else
-        return 400
+      end
+    end
+
+    def execute
+      begin
+        script  = IO.popen([env_var, @absolute_path])
+        script.write(@request.body)
+        @contents = script.read
+
+        return 200
+      rescue
+        return 500
       end
     end
 
     def create
       #TODO: Check if this is append if exists or create
-      unless File.exist?(@full_path)
+      unless File.exist?(@absolute_path)
         #TODO: Could this fail, if not, remove the if block
-        if file = File.new(@full_path, "w")
+        if file = File.new(@absolute_path, "w")
           file.puts @request.body
           file.close
 
@@ -88,6 +83,10 @@ module WebServer
         #TODO: check if this is right of if the request should overwrite
         return 400
       end
+    end
+
+    def delete
+
     end
 
     def authorize
@@ -126,17 +125,33 @@ module WebServer
           sub = @conf.script_alias_path(script_alias)
           path = @request.uri.sub(script_alias, sub)
 
+          @script = true
+
           return path
         end
       end    
 
-      return false
+      @script = false
+
+      return @script
     end
 
     def content_type
-      ext = @full_path.split(".").last
+      ext = @absolute_path.split(".").last
 
       return mimes.for_extension(ext)
+    end
+
+    def env_var
+      env = ENV
+      env['REQUEST_METHOD'] = @request.http_method
+      env['REQUEST_URI'] = @request.uri
+      env['REMOTE_ADDRESS'] = @request.remote_address
+      env['REMOTE_PORT'] = @request.remote_port.to_s
+      env['SERVER_PROTOCOL'] = @request.version
+      env.merge!(@request.headers)
+
+      return env
     end
   end
 end

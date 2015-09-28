@@ -1,14 +1,12 @@
 # The Request class encapsulates the parsing of an HTTP Request
 module WebServer
   class Request
-    attr_accessor :http_method, :uri, :version, :headers, :body, :params
-    attr_reader :socket
+    attr_reader :http_method, :uri, :version, :headers, :body, :params, :socket, :remote_address, :remote_port
 
     # Request creation receives a reference to the socket over which
     # the client has connected
     def initialize(socket)
       # Perform any setup, then parse the request
-
       #TODO: can we get rid of these?
       @headers = Hash.new
       @body = String.new
@@ -35,6 +33,8 @@ module WebServer
     # Parse the request from the socket - Note that this method takes no
     # parameters
     def parse
+      @remote_port, @remote_address = Socket.unpack_sockaddr_in(@socket.getpeername)
+
       parse_request_line
 
       @socket.each do |line|

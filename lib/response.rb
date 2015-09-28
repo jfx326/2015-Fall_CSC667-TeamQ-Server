@@ -23,9 +23,10 @@ module WebServer
     end
 
     module Factory
+
       def self.create(resource)
-        if resource.resolve
-          case resource.serve
+        if File.exist?(resource.resolve)
+          case resource.process
             when 200
               Response::Base.new(resource)
             when 201
@@ -38,13 +39,11 @@ module WebServer
               Response::Unauthorized.new(resource)
             when 403
               Response::Forbidden.new(resource)
-            when 404
-              Response::NotFound.new(resource)
-            when 500
+            else
               Response::ServerError.new(resource)
           end
         else
-          Response::ServerError.new(resource)
+          Response::NotFound.new(resource)
         end
       end
 

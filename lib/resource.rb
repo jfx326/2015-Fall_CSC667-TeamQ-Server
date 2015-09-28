@@ -85,6 +85,9 @@ module WebServer
     end
 
     def delete
+      File.delete(@absolute_path) rescue return 500
+
+      return 204
     end
 
     def authorize

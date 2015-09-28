@@ -6,7 +6,8 @@ module WebServer
 
     RESPONSE_CODES = {
       200 => 'OK',
-      201 => 'Successfully Created',
+      201 => 'Created',
+      204 => 'No Content',
       304 => 'Not Modified',
       400 => 'Bad Request',
       401 => 'Unauthorized',
@@ -30,6 +31,8 @@ module WebServer
             Response::Base.new(resource)
           when 201
             Response::SuccessfullyCreated.new(resource)
+          when 204
+            Response::Deleted.new(resource)
           when 304
             Response::NotModified.new(resource)
           when 400

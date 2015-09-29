@@ -3,9 +3,7 @@ module WebServer
     attr_reader :request, :conf, :mimes, :contents, :script
 
     def initialize(request, httpd_conf, mimes)
-      @request = request
-      @conf = httpd_conf
-      @mimes = mimes
+      @request, @conf, @mimes = request, httpd_conf, mimes
     end
 
     def resolve
@@ -13,13 +11,7 @@ module WebServer
       @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
       #TODO: Why does or work here and || doesn't?
-      unless @request.uri.include? "." or @script
-        if @request.uri[-1] != "/"
-          @absolute_path << "/"
-        end
-
-        @absolute_path << @conf.directory_index
-      end
+      @absolute_path << @conf.directory_index if @absolute_path[-1] == "/"
 
       return @absolute_path
     end
@@ -30,11 +22,7 @@ module WebServer
       @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
       authorized = @auth_browser.protected? ? authorize : 200
 
-      if authorized == 200
-        serve
-      else
-        return authorized
-      end
+      return authorized == 200 ? serve : authorized
     end
 
     def serve
@@ -96,11 +84,7 @@ module WebServer
       if authorization != nil
         encrypted_string = authorization.split(' ').last
 
-        if @auth_browser.authorized?(encrypted_string)
-          return 200
-        else
-          return 403
-        end
+        return @auth_browser.authorized?(encrypted_string) ? 200 : 403
       else
         @contents = @auth_browser.htaccess.auth_name
 
@@ -109,7 +93,7 @@ module WebServer
     end
 
     #TODO: Check if this should exist. Seriously schould combine the two
-    def aliased?      
+    def aliased?
       @conf.aliases.each do |path_alias|
         if @request.uri.include? path_alias
           sub = @conf.alias_path(path_alias)
@@ -146,15 +130,15 @@ module WebServer
     end
 
     def env_var
-      env = ENV
-      env['REQUEST_METHOD'] = @request.http_method
-      env['REQUEST_URI'] = @request.uri
-      env['REMOTE_ADDRESS'] = @request.remote_address
-      env['REMOTE_PORT'] = @request.remote_port.to_s
-      env['SERVER_PROTOCOL'] = @request.version
-      env.merge!(@request.headers)
+      env_var = Hash.new
+      env_var['REQUEST_METHOD'] = @request.http_method
+      env_var['REQUEST_URI'] = @request.uri
+      env_var['REMOTE_ADDRESS'] = @request.remote_address
+      env_var['REMOTE_PORT'] = @request.remote_port.to_s
+      env_var['SERVER_PROTOCOL'] = @request.version
+      env_var.merge!(@request.headers)
 
-      return env
+      return env_var
     end
   end
 end

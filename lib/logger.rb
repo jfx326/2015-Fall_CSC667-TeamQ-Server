@@ -8,9 +8,10 @@ module WebServer
     
     # log_file_path already defined at httpd_conf.conf
     def initialize(log_file_path, options={})
-      @options = options
-      @message = String.new
       @log_file = File.open(log_file_path, 'a')
+      @options = options
+
+      @message = String.new
     end
 
     # Log a message using the information from Request and 

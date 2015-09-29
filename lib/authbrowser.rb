@@ -4,28 +4,17 @@ require 'base64'
 module WebServer
   class AuthBrowser
     def initialize(path, access_file_name, doc_root)
-      @path = path
-      @access_file_name = access_file_name   
+      @path, @access_file_name = path, access_file_name
       @doc_root = String.new doc_root
       @credentials = Hash.new
     end
 
-    #TODO: Best way to do this?
     def protected?
-      directories = @path.gsub(@doc_root, "").split("/")
-
-      if directories.last.include? "."
-        directories = directories[0...-1]
-      end
+      directories = @path.sub(@doc_root, "").split("/")
 
       access_file_path = find_access_files(directories)
 
-      if(access_file_path) 
-        htaccess_file(access_file_path)
-        return true
-      else
-        return false
-      end      
+      return (access_file_path) ? htaccess_file(access_file_path) : false
     end
 
     def authorized? (encrypted_string)
@@ -41,9 +30,8 @@ module WebServer
       passwdFile = File.open(@htaccess.auth_user_file, 'r')
 
       passwdFile.each do |pair|
-        #remove \n
         pair.chomp!
-        user, passwd = pair.split(":")
+        user, passwd = pair.split(':')
 
         @credentials[user] = passwd
       end
@@ -53,29 +41,25 @@ module WebServer
 
     def find_access_files(directories)    
       check_path = @doc_root
-      is_protected = false
 
-      directories.reverse.each do |path| 
-        check_path << path + "/"
-        is_protected = File.exist?(check_path + @access_file_name)
+      directories.each do |path|
+        check_path << path + '/'
 
-        if is_protected
-          return check_path + @access_file_name
-        end
+        return check_path if File.exist?(check_path + @access_file_name)
       end
 
       return false
     end
 
     def htaccess_file(access_file_path)
-      htaccess_content = File.open(access_file_path)
+      htaccess_content = File.open(access_file_path + @access_file_name)
       @htaccess = Htaccess.new(htaccess_content)  
     end
 
     def decrypt_access_string(access_string)
       credentials = Base64.decode64 access_string
-      user, password = credentials.split(":")
-      password = "{SHA}" + Digest::SHA1.base64digest(password)
+      user, password = credentials.split(':')
+      password = '{SHA}' + Digest::SHA1.base64digest(password)
 
       return user, password
     end

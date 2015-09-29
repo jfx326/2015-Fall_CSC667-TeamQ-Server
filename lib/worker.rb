@@ -1,5 +1,6 @@
 require_relative 'request'
 require_relative 'response'
+require_relative 'logger'
 
 # This class will be executed in the context of a thread, and
 # should instantiate a Request from the client (socket), perform
@@ -21,14 +22,13 @@ module WebServer
 
       #TODO: THIS NEEDS ERROR CHECKING!!
       logger = Logger.new(log_file_path)
-
       request = Request.new(@socket)
       resource = Resource.new(request, @server.options[:httpd_conf], @server.options[:mime_types])
       response = Response::Factory.create(resource)
-
+      
       logger.log(request, response)
+      
       @socket.write response.to_s
-
       @socket.close
 
       logger.close

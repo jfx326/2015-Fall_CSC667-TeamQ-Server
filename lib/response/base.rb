@@ -1,8 +1,5 @@
 module WebServer
   module Response
-    # Provides the base functionality for all HTTP Responses 
-    # (This allows us to inherit basic functionality in derived responses
-    # to handle response code specific behavior)
     class Base
       attr_reader :version, :code
 
@@ -13,6 +10,13 @@ module WebServer
         @resource = resource #TODO: Need to figure out how the encapsulation works with this being passed around everywhere
       end
 
+      def to_s
+        s = head
+        s << message
+
+        return s
+      end
+
       def head
         head = "#{@version} #{@code} #{RESPONSE_CODES.fetch(@code)}\n"
 
@@ -21,13 +25,6 @@ module WebServer
         end
 
         return head
-      end
-
-      def to_s
-        s = head
-        s << message
-
-        return s
       end
 
       def message

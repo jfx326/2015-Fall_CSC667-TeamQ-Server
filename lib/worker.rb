@@ -2,9 +2,6 @@ require_relative 'request'
 require_relative 'response'
 require_relative 'logger'
 
-# This class will be executed in the context of a thread, and
-# should instantiate a Request from the client (socket), perform
-# any logging, and issue the Response to the client.
 module WebServer
   class Worker
     # Takes a reference to the client socket and the logger object
@@ -24,6 +21,7 @@ module WebServer
 
     def process_request(socket)
       #TODO: THIS NEEDS ERROR CHECKING!!
+
       request = Request.new(socket)
       resource = Resource.new(request, @server.options[:httpd_conf], @server.options[:mime_types])
       response = Response::Factory.create(resource)

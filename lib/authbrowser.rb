@@ -3,6 +3,8 @@ require 'base64'
 
 module WebServer
   class AuthBrowser
+    attr_reader :htaccess
+
     def initialize(path, access_file_name, doc_root)
       @path, @access_file_name = path, access_file_name
       @doc_root = String.new doc_root
@@ -21,8 +23,13 @@ module WebServer
       parse_htpasswd
 
       user, password = decrypt_access_string(encrypted_string)
+      required = @htaccess.require_user
 
-      return (@credentials[user] == password) ? true : false
+      if required == 'valid-user'
+        return (@credentials[user] == password) ? true : false
+      else
+        return (required == user && @credentials[required] == password) ? true : false
+      end
     end
 
     def parse_htpasswd
@@ -62,9 +69,6 @@ module WebServer
       password = '{SHA}' + Digest::SHA1.base64digest(password)
 
       return user, password
-    end
-
-    def users
     end
   end
 end

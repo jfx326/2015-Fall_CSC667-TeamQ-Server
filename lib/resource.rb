@@ -102,6 +102,8 @@ module WebServer
           return 403
         end
       else
+        @contents = @auth_browser.htaccess.auth_name
+
         return 401
       end
     end

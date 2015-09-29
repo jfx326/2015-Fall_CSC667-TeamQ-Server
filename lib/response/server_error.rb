@@ -6,15 +6,7 @@ module WebServer
         super(resource)
         @code = 500
 
-        @body = "<html><body><h1>500 - Internal Server Error</h1></body></html>"
-      end
-
-      def content_type
-        return 'text/html'
-      end
-
-      def content_length
-        return @body.length
+        @error_body = "<html><body><h1>500 - Internal Server Error</h1></body></html>"
       end
     end
   end

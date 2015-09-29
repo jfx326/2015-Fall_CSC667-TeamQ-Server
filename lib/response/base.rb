@@ -37,9 +37,8 @@ module WebServer
       def default_message
         msg = "Content-Type: #{content_type}\n"
         msg << "Content-Length: #{content_length}\n"
-        msg << "Connection: close\n"
         msg << "\r\n"
-        msg << (@resource.contents || @body)
+        msg << (@resource.contents || @error_body)
 
         return msg
       end
@@ -65,11 +64,11 @@ module WebServer
       end
 
       def content_type
-        return @resource.content_type
+        return @error_body ? 'text/html' : @resource.content_type
       end
 
       def content_length
-        return @resource.contents ? @resource.contents.length : 0
+        return @error_body ? @error_body.length : @resource.contents.length
       end
     end
   end

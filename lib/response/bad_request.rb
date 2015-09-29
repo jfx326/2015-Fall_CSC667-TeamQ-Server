@@ -6,26 +6,7 @@ module WebServer
         super(resource)
         @code = 400
 
-        @body = "<html><body><h1>400 - Bad Request</h1></body></html>"
-      end
-      
-      def to_s
-        s = head
-        s << message
-
-        return s
-      end
-
-      def message
-        msg = "Content-Type: text/html\n"
-        msg << "Content-Length: #{content_length}\n"
-        msg << "Connection: close\n"
-        msg << "\r\n"
-        msg << @body
-      end
-
-      def content_length
-        return @body.length
+        @error_body = "<html><body><h1>400 - Bad Request</h1></body></html>"
       end
     end
   end

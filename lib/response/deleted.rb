@@ -6,10 +6,6 @@ module WebServer
         super(resource)
         @code = 204
       end
-
-      def message
-        "Connection: close\n\r\n"
-      end
     end
   end
 end

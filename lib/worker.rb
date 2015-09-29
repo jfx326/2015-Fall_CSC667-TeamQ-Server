@@ -17,33 +17,20 @@ module WebServer
 
     # Processes the request
     def process_request
-<<<<<<< HEAD
-=======
       # log_file_path already defined at httpd_conf.conf
->>>>>>> ba1e0071912942fdcd03a6e276267064c4be469b
       log_file_path = @server.options[:httpd_conf].log_file
 
       #TODO: THIS NEEDS ERROR CHECKING!!
       logger = Logger.new(log_file_path)
-
       request = Request.new(@socket)
       resource = Resource.new(request, @server.options[:httpd_conf], @server.options[:mime_types])
       response = Response::Factory.create(resource)
-<<<<<<< HEAD
       
       logger.log(request, response)
       
       @socket.write response.to_s
       @socket.close
-      
-=======
 
-      logger.log(request, response)
-      @socket.write response.to_s
-
-      @socket.close
-
->>>>>>> ba1e0071912942fdcd03a6e276267064c4be469b
       logger.close
     end
   end

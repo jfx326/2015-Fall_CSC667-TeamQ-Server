@@ -68,7 +68,7 @@ module WebServer
       end
 
       def content_length
-        return @error_body ? @error_body.length : @resource.contents.length
+        return @error_body ? @error_body.length : @resource.contents ? @resource.contents.length : 0
       end
     end
   end

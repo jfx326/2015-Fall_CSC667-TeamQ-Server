@@ -25,14 +25,6 @@ module WebServer
       assign(property, value, value_path)
     end
 
-    def removeQuotes(val)
-      if val != nil and val[0] == '"' and val[-1] == '"'
-        val = val[1...-1]
-      end
-
-      val
-    end
-
     def assign(property, value, value_path)
       case property
         when "ServerRoot"

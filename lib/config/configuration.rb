@@ -1,6 +1,3 @@
-# This class should be used to encapuslate the functionality 
-# necessary to open and parse configuration files. See
-# HttpdConf and MimeTypes, both derived from this parent class.
 module WebServer
   class Configuration
     def initialize(file_content)
@@ -9,8 +6,17 @@ module WebServer
 
     def parse
       @file_content.each_line do |line|
+        line.chomp!
         parse_line(line) unless line[0] == '#'
       end
+    end
+
+    def removeQuotes(val)
+      if val != nil and val[0] == '"' and val[-1] == '"'
+        val = val[1...-1]
+      end
+
+      val
     end
   end
 end

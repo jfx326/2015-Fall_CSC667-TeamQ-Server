@@ -12,11 +12,7 @@ module WebServer
     end
 
     def removeQuotes(val)
-      if val != nil and val[0] == '"' and val[-1] == '"'
-        val = val[1...-1]
-      end
-
-      val
+      return val.chomp('"').reverse.chomp('"').reverse if val
     end
   end
 end

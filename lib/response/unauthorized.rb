@@ -3,6 +3,18 @@ module WebServer
     # Class to handle 401 responses
     class Unauthorized < Base
       def initialize(resource, options={})
+        super(resource)
+        @code = 401
+      end
+
+      def message
+        unless File.directory?(@resource.request.uri)
+          realm = File.dirname(@resource.request.uri)
+        end
+
+        realm = realm.chomp("/").reverse.chomp("/").reverse
+
+        return "WWW-Authenticate: Basic realm=\"#{realm}\"\r\n"
       end
     end
   end

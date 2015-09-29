@@ -1,6 +1,6 @@
 module WebServer
   class Resource
-    attr_reader :request, :conf, :mimes, :contents
+    attr_reader :request, :conf, :mimes, :contents, :script
 
     def initialize(request, httpd_conf, mimes)
       @request = request
@@ -9,73 +9,101 @@ module WebServer
     end
 
     def resolve
-      @full_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
+      #TODO: Check if this will get marked down since it return //
+      @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
-      unless @request.uri.include? "."
+      #TODO: Why does or work here and || doesn't?
+      unless @request.uri.include? "." or @script
         if @request.uri[-1] != "/"
-          @full_path << "/"
+          @absolute_path << "/"
         end
 
-        @full_path << @conf.directory_index
+        @absolute_path << @conf.directory_index
       end
 
-      return @full_path
+      return @absolute_path
+    end
+
+    def process
+      resolve
+
+      @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
+      authorized = @auth_browser.protected? ? authorize : 200
+
+      if authorized == 200
+        serve
+      else
+        return authorized
+      end
     end
 
     def serve
-      case request.http_method
-        when 'GET'
-          retrieve
-        when 'HEAD'
-          retrieve
-        when 'POST'
-
+      case @request.http_method
+        when 'GET', 'HEAD', 'POST'
+          File.exist?(@absolute_path) ? retrieve : 404
         when 'PUT'
-          create
+          #TODO: Could this fail, if not, remove the if block
+          #TODO: check if this is right of if the request should overwrite
+          !File.exist?(@absolute_path) ? create : 400
+        when 'DELETE'
+          File.exist?(@absolute_path) ? delete : 404
         else
-          403
+          return 403
       end
     end
 
     def retrieve
-      if File.exist?(@full_path)
-        file = File.open(@full_path, "rb")
+      if @script
+        execute
+      else
+        file = File.open(@absolute_path, "rb")
         @contents = file.read
         file.close
 
         return 200
-      else
-        404
       end
+    end
+
+    def execute
+      script = IO.popen([env_var, @absolute_path])
+      script.write(@request.body)
+      @contents = script.read
+
+      return 200
+    rescue
+      return 500
     end
 
     def create
-      #TODO: Check if this is append if exists or create
-      unless File.exist?(@full_path)
-        #TODO: Could this fail, if not, remove the if block
-        if file = File.new(@full_path, "w")
-          file.puts @request.body
-          file.close
+      file = File.new(@absolute_path, 'w')
+      file.puts @request.body
+      file.close
 
-          return 201
-        end
-      else
-        #TODO: check if this is right of if the request should overwrite
-        return 400
-      end
+      return 201
+    rescue
+      return 500
     end
 
-    def script_aliased? 
-      @conf.script_aliases.each do |script_alias|
-        if @request.uri.include? script_alias
-          sub = @conf.script_alias_path(script_alias)
-          path = @request.uri.sub(script_alias, sub)
+    def delete
+      File.delete(@absolute_path) rescue return 500
 
-          return path
+      return 204
+    end
+
+    def authorize
+      authorization = request.headers['AUTHORIZATION']
+
+      if authorization != nil
+        encrypted_string = authorization.split(' ').last
+
+        if @auth_browser.authorized?(encrypted_string)
+          return 200
+        else
+          return 403
         end
-      end    
-
-      return false
+      else
+        return 401
+      end
     end
 
     #TODO: Check if this should exist. Seriously schould combine the two
@@ -92,15 +120,39 @@ module WebServer
       return false
     end
 
-    #TODO: This is a bit iffy
-    def protected?
-      File.exist?(@conf.access_file_name)
+    def script_aliased? 
+      @conf.script_aliases.each do |script_alias|
+        if @request.uri.include? script_alias
+          sub = @conf.script_alias_path(script_alias)
+          path = @request.uri.sub(script_alias, sub)
+
+          @script = true
+
+          return path
+        end
+      end    
+
+      @script = false
+
+      return @script
     end
 
     def content_type
-      ext = @full_path.split(".").last
+      ext = @absolute_path.split(".").last
 
       return mimes.for_extension(ext)
+    end
+
+    def env_var
+      env = ENV
+      env['REQUEST_METHOD'] = @request.http_method
+      env['REQUEST_URI'] = @request.uri
+      env['REMOTE_ADDRESS'] = @request.remote_address
+      env['REMOTE_PORT'] = @request.remote_port.to_s
+      env['SERVER_PROTOCOL'] = @request.version
+      env.merge!(@request.headers)
+
+      return env
     end
   end
 end

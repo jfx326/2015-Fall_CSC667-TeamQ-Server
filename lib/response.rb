@@ -6,7 +6,8 @@ module WebServer
 
     RESPONSE_CODES = {
       200 => 'OK',
-      201 => 'Successfully Created',
+      201 => 'Created',
+      204 => 'No Content',
       304 => 'Not Modified',
       400 => 'Bad Request',
       401 => 'Unauthorized',
@@ -18,33 +19,32 @@ module WebServer
     def self.default_headers
       {
         'Date' => Time.now.strftime('%a, %e %b %Y %H:%M:%S %Z'),
-        'Server' => 'John Roberts CSC 667'
+        'Server' => 'Team Q CSC 667'
       }
     end
 
     module Factory
+
       def self.create(resource)
-        if resource.resolve
-          case resource.serve
-            when 200
-              Response::Base.new(resource)
-            when 201
-              Response::SuccessfullyCreated.new(resource)
-            when 304
-              Response::NotModified.new(resource)
-            when 400
-              Response::BadRequest.new(resource)
-            when 401
-              Response::Unauthorized.new(resource)
-            when 403
-              Response::Forbidden.new(resource)
-            when 404
-              Response::NotFound.new(resource)
-            when 500
-              Response::ServerError.new(resource)
-          end
-        else
-          Response::ServerError.new(resource)
+        case resource.process
+          when 200
+            Response::Base.new(resource)
+          when 201
+            Response::SuccessfullyCreated.new(resource)
+          when 204
+            Response::Deleted.new(resource)
+          when 304
+            Response::NotModified.new(resource)
+          when 400
+            Response::BadRequest.new(resource)
+          when 401
+            Response::Unauthorized.new(resource)
+          when 403
+            Response::Forbidden.new(resource)
+          when 404
+            Response::NotFound.new(resource)
+          else
+            Response::ServerError.new(resource)
         end
       end
 

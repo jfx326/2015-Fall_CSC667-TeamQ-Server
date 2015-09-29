@@ -36,6 +36,7 @@ module WebServer
       case property
         when "ServerRoot"
           @server_root = value
+          ENV['DOCUMENT_ROOT'] = value
         when "DocumentRoot"
           @document_root = value
         when "DirectoryIndex"

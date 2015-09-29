@@ -35,7 +35,7 @@ module WebServer
     
     # TODO: what to put for %l/%u? request.user_id used for %u
     def log(request, response)
-      @message = "#{request.socket.peeraddr[3]} "
+      @message = "#{request.remote_address} "
       @message << "#{request.user_id} "
       @message << "[" + Time.now.strftime('%a, %F, %T %z') + "] "
       @message << "\"#{request.http_method} #{request.uri} #{request.version}\" "

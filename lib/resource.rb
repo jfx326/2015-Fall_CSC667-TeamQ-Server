@@ -32,9 +32,7 @@ module WebServer
         when 'GET', 'HEAD', 'POST'
           File.exist?(@absolute_path) ? retrieve : 404
         when 'PUT'
-          #TODO: Could this fail, if not, remove the if block
-          #TODO: check if this is right of if the request should overwrite
-          !File.exist?(@absolute_path) ? create : 400
+          create
         when 'DELETE'
           File.exist?(@absolute_path) ? delete : 404
         else

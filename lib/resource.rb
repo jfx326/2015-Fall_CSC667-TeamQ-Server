@@ -55,8 +55,13 @@ module WebServer
     end
 
     def execute
-      args = (@request.http_method == 'POST') ? @request.body : @request.params
-      @contents = IO.popen([env_var, @absolute_path, *args]).read
+      if (@request.http_method == 'POST')
+        @request.parse_params(@request.body)
+      end
+
+      args = @request.params
+
+      @contents = IO.popen([env, @absolute_path, *args]).read
 
       return 200
     rescue

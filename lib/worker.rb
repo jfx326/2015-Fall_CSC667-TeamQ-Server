@@ -23,12 +23,15 @@ module WebServer
     end
 
     def process_request(socket)
-      #TODO: THIS NEEDS ERROR CHECKING!!
       request = Request.new(socket)
       resource = Resource.new(request, @server.options[:httpd_conf], @server.options[:mime_types])
       response = Response::Factory.create(resource)
 
       @logger.log(request, response)
+    rescue
+      # TODO: Does this really make sense/even suffice?
+      response = Response::Factory.error(nil, nil)
+    ensure
       socket.write response.to_s
     end
 

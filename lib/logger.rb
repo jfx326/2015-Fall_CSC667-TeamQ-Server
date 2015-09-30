@@ -31,7 +31,7 @@ module WebServer
     
     # for remote logname (%l) just use "-"
     def log(request, response)
-      @message = "#{request.remote_address} - #{request.user_id} "
+      @message = "#{request.socket.peeraddr[3]} - #{request.user_id} "
       @message << "[" + Time.now.strftime('%a, %F, %T %z') + "] "
       @message << "\"#{request.http_method} #{request.uri} #{request.version}\" "
       @message << "#{response.code} "

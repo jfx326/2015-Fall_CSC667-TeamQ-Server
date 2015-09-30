@@ -77,6 +77,7 @@ module WebServer
       @errors.push(Error.new("htttp.conf Error: ServerRoot path can not be a file")) if File.file?(@server_root)
       @errors.push(Error.new("htttp.conf Error: Invalid DocumentRoot path")) if !File.exist?(@document_root)
       @errors.push(Error.new("htttp.conf Error: DocumentRoot path can not be a file")) if File.file?(@document_root)
+      @errors.push(Error.new("httpd.conf Error: Invalid Log File path. Given directory doesn't exist")) if !File.exist?(File.dirname(@log_file))
     end
   end
 end

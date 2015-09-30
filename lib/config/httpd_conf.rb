@@ -2,18 +2,25 @@ require_relative 'configuration'
 
 module WebServer
   class HttpdConf < Configuration
-    attr_reader :server_root, :document_root, :port, :log_file, :access_file_name, :script_aliases, :aliases
+    attr_reader :server_root, :document_root, :directory_index, :port, :log_file, :access_file_name, :script_aliases, :aliases
 
     #TODO: Errors - malformed syntax, nonexistent properties && Reduce size of this method
     def initialize(httpd_file_content)
       super(httpd_file_content)
 
+      set_defaults
+      parse
+    end
+
+    def set_defaults
+      @directory_index = 'index.html'
+      @access_file_name = '.htaccess'
+      @port = 80
+
       @script_aliases = Array.new
       @aliases = Array.new
       @script_alias_path = Hash.new
       @alias_path = Hash.new
-
-      parse
     end
 
     def parse_line(line)
@@ -46,10 +53,6 @@ module WebServer
           @aliases.push(value)
           @alias_path[value] = value_path
       end
-    end
-
-    def directory_index
-      @directory_index || "index.html"
     end
 
     def script_alias_path(path)      

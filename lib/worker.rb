@@ -23,15 +23,19 @@ module WebServer
     end
     
     def process_request
-      #TODO: THIS NEEDS ERROR CHECKING!!
-      max_requests = @options[:httpd_conf].max_requests || 0
+      keep_alive = @options[:httpd_conf].keep_alive
+      max_requests = @options[:httpd_conf].max_requests
 
       loop do
         @request_count += 1
         evaluate_request
 
-        wait_for_request rescue break
-        break if (max_requests > 0 && (@request_count + 1) > max_requests)
+        if keep_alive
+          wait_for_request rescue break
+          break if (max_requests > 0 && (@request_count + 1) > max_requests)
+        else
+          break
+        end
       end
     end
 
@@ -45,7 +49,7 @@ module WebServer
     end
 
     def wait_for_request
-      expiry = @options[:httpd_conf].timeout || -1
+      expiry = @options[:httpd_conf].timeout
 
       Timeout::timeout(expiry) do
         loop { break if(!@socket.eof?) }

@@ -2,7 +2,7 @@ require_relative 'configuration'
 
 module WebServer
   class HttpdConf < Configuration
-    attr_reader :server_root, :document_root, :directory_index, :port, :log_file, :access_file_name, :script_aliases, :aliases, :max_requests, :timeout
+    attr_reader :server_root, :document_root, :directory_index, :port, :log_file, :access_file_name, :script_aliases, :aliases, :keep_alive, :max_requests, :timeout
 
     def initialize(httpd_file_content)
       super(httpd_file_content)
@@ -15,6 +15,9 @@ module WebServer
     def set_defaults
       @directory_index = 'index.html'
       @access_file_name = '.htaccess'
+      @keep_alive = false
+      @max_requests = 0
+      @timeout = 7
       @port = 80
 
       @script_aliases = Array.new
@@ -46,6 +49,8 @@ module WebServer
           @log_file = value
         when 'AccessFileName'
           @access_file_name = value
+        when 'KeepAlive'
+          @keep_alive = (value == 'on' ? true : false)
         when 'MaxKeepAliveRequests'
           @max_requests = value.to_i
         when 'KeepAliveTimeout'

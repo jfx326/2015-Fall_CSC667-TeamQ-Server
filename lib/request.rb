@@ -1,6 +1,6 @@
 module WebServer
   class Request
-    attr_reader :http_method, :uri, :version, :headers, :body, :params, :socket, :remote_address, :remote_port
+    attr_reader :http_method, :uri, :version, :headers, :body, :params, :socket
 
     def initialize(socket)
       @socket = socket
@@ -8,7 +8,6 @@ module WebServer
       @headers = Hash.new
       @body = String.new
       @params = Hash.new
-      @remote_port, @remote_address = Socket.unpack_sockaddr_in(@socket.getpeername)
 
       parse
     end
@@ -33,11 +32,10 @@ module WebServer
         parse_header(line)
       end
 
-      if @headers['CONTENT_LENGTH'].to_i > 0
-        @socket.each do |body_line|
-          parse_body(body_line)
-        end
+      body_length = @headers['CONTENT_LENGTH'].to_i
 
+      if body_length > 0
+        @body = @socket.read(body_length)
         @body.chomp!
       end
 
@@ -48,7 +46,10 @@ module WebServer
     def parse_request_line
       @http_method, @uri, @version = @socket.gets.split(' ')
 
-      parse_params
+      if @uri.include? "?"
+        @uri, query = @uri.split('?')
+        parse_params(query)
+      end
     end
 
     def parse_header(header_line)
@@ -60,20 +61,12 @@ module WebServer
       @headers[key] = value
     end
 
-    def parse_body(body_line)
-      @body << body_line
-    end
+    def parse_params(query)
+      params = query.split('&')
 
-    def parse_params
-      if @uri.include? "?"
-        @uri, query = @uri.split('?')
-
-        params = query.split('&')
-
-        params.each do |param|
-          key, value = param.split('=')
-          @params[key] = value
-        end
+      params.each do |param|
+        key, value = param.split('=')
+        @params[key] = value
       end
     end
   end

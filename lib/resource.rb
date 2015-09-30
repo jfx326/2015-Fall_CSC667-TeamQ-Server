@@ -130,16 +130,18 @@ module WebServer
       return mimes.for_extension(ext)
     end
 
-    def env_var
-      env_var = Hash.new
-      env_var['REQUEST_METHOD'] = @request.http_method
-      env_var['REQUEST_URI'] = @request.uri
-      env_var['REMOTE_ADDRESS'] = @request.remote_address
-      env_var['REMOTE_PORT'] = @request.remote_port.to_s
-      env_var['SERVER_PROTOCOL'] = @request.version
-      env_var.merge!(@request.headers)
+    def env
+      env = {
+        'DOCUMENT_ROOT' => @conf.document_root,
+        'REQUEST_METHOD' => @request.http_method,
+        'REQUEST_URI' => @request.uri,
+        'REMOTE_ADDRESS' => @request.socket.peeraddr[1],
+        'REMOTE_PORT' => @request.socket.peeraddr[3],
+        'SERVER_PROTOCOL' => @request.version
+      }
+      env.merge!(@request.headers)
 
-      return env_var
+      return env
     end
   end
 end

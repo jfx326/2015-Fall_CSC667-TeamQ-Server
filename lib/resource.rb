@@ -8,6 +8,15 @@ module WebServer
       @request, @conf, @mimes = request, httpd_conf, mimes
     end
 
+    def process
+      resolve
+
+      @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
+      authorized = @auth_browser.protected? ? authorize : 200
+
+      return authorized == 200 ? serve : authorized
+    end
+
     def resolve
       #TODO: Check if this will get marked down since it return //
       @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
@@ -16,15 +25,6 @@ module WebServer
       @absolute_path << @conf.directory_index if @absolute_path[-1] == "/"
 
       return @absolute_path
-    end
-
-    def process
-      resolve
-
-      @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
-      authorized = @auth_browser.protected? ? authorize : 200
-
-      return authorized == 200 ? serve : authorized
     end
 
     def serve

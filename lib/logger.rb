@@ -1,17 +1,19 @@
 module WebServer
   class Logger
 
-    # Takes the absolute path to the log file, and any options
-    # you may want to specify.  I include the option :echo to 
-    # allow me to decide if I want my server to print out log
-    # messages as they get generated
-    
-    # log_file_path already defined at httpd_conf.conf
     def initialize(log_file_path, options={})
-      @log_file = File.open(log_file_path, 'a')
+      @log_file = retrieve(log_file_path)
       @options = options
 
       @message = String.new
+    end
+
+    def retrieve(log_file_path)
+      if File.exist?(log_file_path)
+        return File.open(log_file_path, 'a')
+      else
+        return File.new(log_file_path, 'a')
+      end
     end
 
     # Log a message using the information from Request and 
@@ -32,28 +34,17 @@ module WebServer
     # for remote logname (%l) just use "-"
     def log(request, response)
       @message = "#{request.socket.peeraddr[3]} - #{request.user_id} "
-      @message << "[" + Time.now.strftime('%a, %F, %T %z') + "] "
+      @message << "[#{Time.now.strftime('%a, %F, %T %z')}] "
       @message << "\"#{request.http_method} #{request.uri} #{request.version}\" "
       @message << "#{response.code} "
-      
-      if response.content_length == 0
-        @message << "-"
-      else
-        @message << "#{response.content_length}"
-      end
-      
+      @message << ((response.content_length == 0) ? '-' : "#{response.content_length}")
       @message << "\r\n"
+
+      puts @message if @options[:echo]
+      @log_file.puts @message
     end
 
-    # Allow the consumer of this class to flush and close the 
-    # log file
     def close
-      # if :echo option given, also print message to console
-      if @options.has_key?(:echo) && @options[:echo] == true
-        puts @message
-      end
-      
-      @log_file.puts @message
       @log_file.close
     end
   end

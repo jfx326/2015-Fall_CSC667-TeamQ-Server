@@ -11,6 +11,7 @@ module WebServer
 
     def initialize(options={})
       @options = options
+      @options[:echo] = true
 
       httpd_file = File.open('config/httpd.conf', 'rb')
       mime_file = File.open('config/mime.types', 'rb')
@@ -30,7 +31,7 @@ module WebServer
       loop do
         socket = @server.accept
 
-        Thread.new { Worker.new(socket, self) }
+        Thread.new { Worker.new(socket, @options) }
       end
     rescue LoadError
       puts "Aborting server start - configuration errors"

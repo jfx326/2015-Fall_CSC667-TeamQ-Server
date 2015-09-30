@@ -66,10 +66,14 @@ module WebServer
 
     def parse_params
       if @uri.include? "?"
-        @uri, query = @uri.split("?")
+        @uri, query = @uri.split('?')
 
-        key, value = query.split("=")
-        @params[key] = value
+        params = query.split('&')
+
+        params.each do |param|
+          key, value = param.split('=')
+          @params[key] = value
+        end
       end
     end
   end

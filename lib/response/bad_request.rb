@@ -6,7 +6,7 @@ module WebServer
         super(resource)
         @code = 400
 
-        @error_body = "<html><body><h1>400 - Bad Request</h1></body></html>"
+        @error_body = '<html><body><h1>400 - Bad Request</h1></body></html>'
       end
     end
   end

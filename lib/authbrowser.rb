@@ -12,7 +12,7 @@ module WebServer
     end
 
     def protected?
-      directories = @path.sub(@doc_root, "").split("/")
+      directories = @path.sub(@doc_root, '').split('/')
 
       access_file_path = find_access_files(directories)
 

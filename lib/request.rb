@@ -46,17 +46,17 @@ module WebServer
     def parse_request_line
       @http_method, @uri, @version = @socket.gets.split(' ')
 
-      if @uri.include? "?"
+      if @uri.include? '?'
         @uri, query = @uri.split('?')
         parse_params(query)
       end
     end
 
     def parse_header(header_line)
-      key, value = header_line.split(": ")
+      key, value = header_line.split(': ')
 
       key.upcase!
-      key.sub!("-","_")
+      key.sub!('-','_')
       
       @headers[key] = value
     end

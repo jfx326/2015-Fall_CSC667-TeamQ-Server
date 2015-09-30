@@ -11,19 +11,19 @@ module WebServer
     end
 
     def parse_line(line)
-      key, value = line.split(" ", 2)
+      key, value = line.split(' ', 2)
 
       value = removeQuotes(value)
 
       #TODO: should do some error checking on this
       case key
-        when "AuthUserFile"
+        when 'AuthUserFile'
           @auth_user_file = value
-        when "AuthType"
+        when 'AuthType'
           @auth_type = value
-        when "AuthName"
+        when 'AuthName'
           @auth_name = value
-        when "Require"
+        when 'Require'
           @require_user = (value == 'valid-user') ? value : value.split(' ').last
       end
     end

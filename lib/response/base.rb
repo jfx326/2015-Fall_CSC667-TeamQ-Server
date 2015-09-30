@@ -21,7 +21,7 @@ module WebServer
         head = "#{@version} #{@code} #{RESPONSE_CODES.fetch(@code)}\n"
 
         Response.default_headers.each do |header|
-          head << header[0] + ": " + header[1] + "\n"
+          head << header[0] + ': ' + header[1] + "\n"
         end
 
         return head
@@ -43,11 +43,6 @@ module WebServer
 
       def script_message
         return @resource.contents
-      end
-
-      def put_message
-        #TODO: I think this needs a resource.contents as well??"
-        msg = "Location: http://localhost:#{@resource.conf.port}#{@resource.request.uri}\r\n"
       end
 
       def content_type

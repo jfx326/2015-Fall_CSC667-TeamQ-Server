@@ -6,7 +6,7 @@ module WebServer
         super(resource)
         @code = 404
 
-        @error_body = "<html><body><h1>404 - Resource Not Found</h1></body></html>"
+        @error_body = '<html><body><h1>404 - Resource Not Found</h1></body></html>'
       end
     end
   end

@@ -22,7 +22,7 @@ module WebServer
       @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
       #TODO: Why does or work here and || doesn't?
-      @absolute_path << @conf.directory_index if @absolute_path[-1] == "/"
+      @absolute_path << @conf.directory_index if @absolute_path[-1] == '/'
 
       return @absolute_path
     end
@@ -44,7 +44,7 @@ module WebServer
       if @script
         execute
       else
-        file = File.open(@absolute_path, "rb")
+        file = File.open(@absolute_path, 'rb')
         @contents = file.read
         file.close
 
@@ -117,18 +117,16 @@ module WebServer
           path = @request.uri.sub(script_alias, sub)
 
           @script = true
-
           return path
         end
       end    
 
       @script = false
-
       return @script
     end
 
     def content_type
-      ext = @absolute_path.split(".").last
+      ext = @absolute_path.split('.').last
 
       return mimes.for_extension(ext)
     end

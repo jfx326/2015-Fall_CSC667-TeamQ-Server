@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo Content-Type: text/plain
+echo "\r\n"
 echo My name is $0
 echo My process number is $$
 echo I have $# arguments

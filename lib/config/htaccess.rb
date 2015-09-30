@@ -6,7 +6,6 @@ module WebServer
 
     def initialize(htaccess_file_content)      
       super(htaccess_file_content)
-      @credentials = Hash.new
 
       parse
     end
@@ -25,7 +24,7 @@ module WebServer
         when "AuthName"
           @auth_name = value
         when "Require"
-          @require_user = value
+          @require_user = (value == 'valid-user') ? value : value.split(' ').last
       end
     end
   end

@@ -1,22 +1,15 @@
-# The Request class encapsulates the parsing of an HTTP Request
 module WebServer
   class Request
-    attr_reader :http_method, :uri, :version, :headers, :body, :params, :socket, :remote_address, :remote_port
+    attr_reader :http_method, :uri, :version, :headers, :body, :params, :socket
 
-    # Request creation receives a reference to the socket over which
-    # the client has connected
     def initialize(socket)
-      # Perform any setup, then parse the request
-      #TODO: can we get rid of these?
+      @socket = socket
+
       @headers = Hash.new
       @body = String.new
       @params = Hash.new
-      @socket = socket
 
-      #TODO: Check this weird edge case
-      unless @socket == nil
-        parse
-      end
+      parse
     end
 
     # I've added this as a convenience method, see TODO (This is called from the logger
@@ -29,39 +22,34 @@ module WebServer
       '-'
     end
 
-    #TODO: Confused about this
-    # Parse the request from the socket - Note that this method takes no
-    # parameters
     def parse
-      @remote_port, @remote_address = Socket.unpack_sockaddr_in(@socket.getpeername)
-
       parse_request_line
 
       @socket.each do |line|
-        break if line == "\r\n"
+        line.chomp!
+        break if line == ''
+
         parse_header(line)
       end
 
-      if @headers['CONTENT_LENGTH'].to_i > 0
-        @socket.each do |body_line|
-          parse_body(body_line)
-        end
+      body_length = @headers['CONTENT_LENGTH'].to_i
 
+      if body_length > 0
+        @body = @socket.read(body_length)
         @body.chomp!
       end
 
-    end
-
-    # The following lines provide a suggestion for implementation - feel free
-    # to erase and create your own...
-    def next_line
-      @socket.gets
+    rescue
+      return 400
     end
 
     def parse_request_line
-      @http_method, @uri, @version = @socket.gets.split(" ")
+      @http_method, @uri, @version = @socket.gets.split(' ')
 
-      parse_params
+      if @uri.include? "?"
+        @uri, query = @uri.split('?')
+        parse_params(query)
+      end
     end
 
     def parse_header(header_line)
@@ -69,20 +57,15 @@ module WebServer
 
       key.upcase!
       key.sub!("-","_")
-      value.chomp!
       
       @headers[key] = value
     end
 
-    def parse_body(body_line)
-      @body = @body + body_line
-    end
+    def parse_params(query)
+      params = query.split('&')
 
-    def parse_params
-      if @uri.include? "?"
-        @uri, query = @uri.split("?")
-
-        key, value = query.split("=")
+      params.each do |param|
+        key, value = param.split('=')
         @params[key] = value
       end
     end

@@ -10,9 +10,6 @@ module WebServer
     DEFAULT_PORT = 2468
 
     def initialize(options={})
-      # Set up WebServer's configuration files and logger here
-      # Do any preparation necessary to allow threading multiple requests"    
-
       @options = options
 
       httpd_file = File.open('config/httpd.conf', 'rb')
@@ -26,22 +23,27 @@ module WebServer
     end
 
     def start
-      # Begin your 'infinite' loop, reading from the TCPServer, and
-      # processing the requests as connections are made
+      raise LoadError if (@options[:httpd_conf].errors.count > 0)
+
+      server
+
+      loop do
+        socket = @server.accept
+
+        Thread.new { Worker.new(socket, self) }
+      end
+    rescue LoadError
+      puts "Aborting server start - configuration errors"
+
+      @options[:httpd_conf].errors.map { |e| puts e.message }
+    end
+
+    def server
       port = options[:httpd_conf].port || DEFAULT_PORT
       @server ||= TCPServer.open(port)
 
       puts "Starting server on localhost:#{port}\n\n"
-      loop do 
-        socket = @server.accept
-
-        Thread.new do
-          Worker.new(socket, self)
-        end
-      end 
     end
-
-    private
   end
 end
 

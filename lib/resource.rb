@@ -1,27 +1,11 @@
+require 'open3'
+
 module WebServer
   class Resource
     attr_reader :request, :conf, :mimes, :contents, :script
 
     def initialize(request, httpd_conf, mimes)
-      @request = request
-      @conf = httpd_conf
-      @mimes = mimes
-    end
-
-    def resolve
-      #TODO: Check if this will get marked down since it return //
-      @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
-
-      #TODO: Why does or work here and || doesn't?
-      unless @request.uri.include? "." or @script
-        if @request.uri[-1] != "/"
-          @absolute_path << "/"
-        end
-
-        @absolute_path << @conf.directory_index
-      end
-
-      return @absolute_path
+      @request, @conf, @mimes = request, httpd_conf, mimes
     end
 
     def process
@@ -30,11 +14,17 @@ module WebServer
       @auth_browser = AuthBrowser.new(@absolute_path, @conf.access_file_name, @conf.document_root)
       authorized = @auth_browser.protected? ? authorize : 200
 
-      if authorized == 200
-        serve
-      else
-        return authorized
-      end
+      return authorized == 200 ? serve : authorized
+    end
+
+    def resolve
+      #TODO: Check if this will get marked down since it return //
+      @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
+
+      #TODO: Why does or work here and || doesn't?
+      @absolute_path << @conf.directory_index if @absolute_path[-1] == "/"
+
+      return @absolute_path
     end
 
     def serve
@@ -42,9 +32,7 @@ module WebServer
         when 'GET', 'HEAD', 'POST'
           File.exist?(@absolute_path) ? retrieve : 404
         when 'PUT'
-          #TODO: Could this fail, if not, remove the if block
-          #TODO: check if this is right of if the request should overwrite
-          !File.exist?(@absolute_path) ? create : 400
+          create
         when 'DELETE'
           File.exist?(@absolute_path) ? delete : 404
         else
@@ -65,9 +53,13 @@ module WebServer
     end
 
     def execute
-      script = IO.popen([env_var, @absolute_path])
-      script.write(@request.body)
-      @contents = script.read
+      if (@request.http_method == 'POST')
+        @request.parse_params(@request.body)
+      end
+
+      args = @request.params
+
+      @contents = IO.popen([env, @absolute_path, *args]).read
 
       return 200
     rescue
@@ -96,18 +88,16 @@ module WebServer
       if authorization != nil
         encrypted_string = authorization.split(' ').last
 
-        if @auth_browser.authorized?(encrypted_string)
-          return 200
-        else
-          return 403
-        end
+        return @auth_browser.authorized?(encrypted_string) ? 200 : 403
       else
+        @contents = @auth_browser.htaccess.auth_name
+
         return 401
       end
     end
 
     #TODO: Check if this should exist. Seriously schould combine the two
-    def aliased?      
+    def aliased?
       @conf.aliases.each do |path_alias|
         if @request.uri.include? path_alias
           sub = @conf.alias_path(path_alias)
@@ -143,13 +133,15 @@ module WebServer
       return mimes.for_extension(ext)
     end
 
-    def env_var
-      env = ENV
-      env['REQUEST_METHOD'] = @request.http_method
-      env['REQUEST_URI'] = @request.uri
-      env['REMOTE_ADDRESS'] = @request.remote_address
-      env['REMOTE_PORT'] = @request.remote_port.to_s
-      env['SERVER_PROTOCOL'] = @request.version
+    def env
+      env = {
+        'DOCUMENT_ROOT' => @conf.document_root,
+        'REQUEST_METHOD' => @request.http_method,
+        'REQUEST_URI' => @request.uri,
+        'REMOTE_ADDRESS' => @request.socket.peeraddr[1],
+        'REMOTE_PORT' => @request.socket.peeraddr[3],
+        'SERVER_PROTOCOL' => @request.version
+      }
       env.merge!(@request.headers)
 
       return env

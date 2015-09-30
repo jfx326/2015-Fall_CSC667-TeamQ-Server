@@ -1,8 +1,5 @@
 module WebServer
   module Response
-    # Provides the base functionality for all HTTP Responses 
-    # (This allows us to inherit basic functionality in derived responses
-    # to handle response code specific behavior)
     class Base
       attr_reader :version, :code
 
@@ -11,6 +8,13 @@ module WebServer
         @code = 200
 
         @resource = resource #TODO: Need to figure out how the encapsulation works with this being passed around everywhere
+      end
+
+      def to_s
+        s = head
+        s << message
+
+        return s
       end
 
       def head
@@ -23,13 +27,6 @@ module WebServer
         return head
       end
 
-      def to_s
-        s = head
-        s << message
-
-        return s
-      end
-
       def message
         return @resource.script ? script_message : default_message
       end
@@ -37,6 +34,7 @@ module WebServer
       def default_message
         msg = "Content-Type: #{content_type}\n"
         msg << "Content-Length: #{content_length}\n"
+        msg << "Connection: #{@resource.conf.timeout ? 'keep-alive' : 'close'}\n"
         msg << "\r\n"
         msg << (@resource.contents || @error_body)
 
@@ -44,18 +42,7 @@ module WebServer
       end
 
       def script_message
-        msg = String.new
-
-        #TODO: Not sure if this is valid
-        if @resource.contents.include? 'Content-Type:'
-          msg << @resource.contents
-        else
-          msg << "Content-Type: text/html\n"
-          msg << "\r\n"
-          msg << @resource.contents
-        end
-
-        return msg
+        return @resource.contents
       end
 
       def put_message
@@ -68,7 +55,7 @@ module WebServer
       end
 
       def content_length
-        return @error_body ? @error_body.length : @resource.contents.length
+        return @error_body ? @error_body.length : @resource.contents ? @resource.contents.length : 0
       end
     end
   end

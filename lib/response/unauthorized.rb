@@ -7,14 +7,11 @@ module WebServer
         @code = 401
       end
 
-      def message
-        unless File.directory?(@resource.request.uri)
-          realm = File.dirname(@resource.request.uri)
-        end
+      def to_s
+        s = head
+        s << "WWW-Authenticate: Basic realm=\"#{@resource.contents}\"\r\n"
 
-        realm = realm.chomp("/").reverse.chomp("/").reverse
-
-        return "WWW-Authenticate: Basic realm=\"#{realm}\"\r\n"
+        return s
       end
     end
   end

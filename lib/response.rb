@@ -35,16 +35,14 @@ module WebServer
             Response::Deleted.new(resource)
           when 304
             Response::NotModified.new(resource)
-          when 400
-            Response::BadRequest.new(resource)
           when 401
             Response::Unauthorized.new(resource)
           when 403
             Response::Forbidden.new(resource)
           when 404
             Response::NotFound.new(resource)
-          else
-            Response::ServerError.new(resource)
+          when Error
+            self.error(resource, Error)
         end
       end
 

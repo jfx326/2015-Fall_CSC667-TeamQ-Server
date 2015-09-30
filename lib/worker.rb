@@ -5,7 +5,7 @@ require_relative 'logger'
 
 module WebServer
   class Worker
-    # Takes a reference to the client socket and the logger object
+
     def initialize(client_socket, options={})
       @socket = client_socket
       @options = options
@@ -41,9 +41,13 @@ module WebServer
 
     def evaluate_request
       request = Request.new(@socket)
+      request.parse
       resource = Resource.new(request, @options[:httpd_conf], @options[:mime_types])
       response = Response::Factory.create(resource)
 
+    rescue Error => e
+      response = Response::BadRequest.new
+    ensure
       @logger.log(request, response)
       @socket.puts response.to_s
     end

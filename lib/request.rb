@@ -8,8 +8,6 @@ module WebServer
       @headers = Hash.new
       @body = String.new
       @params = Hash.new
-
-      parse
     end
 
     # I've added this as a convenience method, see TODO (This is called from the logger
@@ -38,9 +36,8 @@ module WebServer
         @body = @socket.read(body_length)
         @body.chomp!
       end
-
     rescue
-      return 400
+      raise Error.new('Bad Request', 400)
     end
 
     def parse_request_line

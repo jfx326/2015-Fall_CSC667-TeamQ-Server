@@ -63,7 +63,7 @@ module WebServer
 
       return 200
     rescue
-      return 500
+      return Error.new('CGI Script Execution Error', 500)
     end
 
     def create
@@ -73,12 +73,11 @@ module WebServer
 
       return 201
     rescue
-      return 500
+      return Error.new('Unable to create resource', 500)
     end
 
     def delete
-      File.delete(@absolute_path) rescue return 500
-
+      File.delete(@absolute_path) rescue return Error.new('Unable to delete resource', 500)
       return 204
     end
 

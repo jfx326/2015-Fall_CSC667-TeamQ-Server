@@ -28,15 +28,15 @@ module WebServer
       end
 
       def message
-        return @resource.script ? script_message : default_message
+        return (@resource && @resource.script) ? script_message : default_message
       end
 
       def default_message
         msg = "Content-Type: #{content_type}\n"
         msg << "Content-Length: #{content_length}\n"
-        msg << "Connection: #{@resource.conf.keep_alive ? 'keep-alive' : 'close'}\n"
+        msg << "Connection: #{(@resource && @resource.conf.keep_alive) ? 'keep-alive' : 'close'}\n"
         msg << "\r\n"
-        msg << (@resource.contents || @error_body)
+        msg << (@error_body || @resource.contents)
 
         return msg
       end

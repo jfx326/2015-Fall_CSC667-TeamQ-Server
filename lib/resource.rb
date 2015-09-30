@@ -1,3 +1,5 @@
+require 'open3'
+
 module WebServer
   class Resource
     attr_reader :request, :conf, :mimes, :contents, :script
@@ -53,9 +55,8 @@ module WebServer
     end
 
     def execute
-      script = IO.popen([env_var, @absolute_path])
-      script.write(@request.body)
-      @contents = script.read
+      args = (@request.http_method == 'POST') ? @request.body : @request.params
+      @contents = IO.popen([env_var, @absolute_path, *args]).read
 
       return 200
     rescue

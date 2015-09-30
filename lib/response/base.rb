@@ -41,18 +41,7 @@ module WebServer
       end
 
       def script_message
-        msg = String.new
-
-        #TODO: Not sure if this is valid
-        if @resource.contents.include? 'Content-Type:'
-          msg << @resource.contents
-        else
-          msg << "Content-Type: text/html\n"
-          msg << "\r\n"
-          msg << @resource.contents
-        end
-
-        return msg
+        return @resource.contents
       end
 
       def put_message

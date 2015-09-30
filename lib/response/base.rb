@@ -34,6 +34,7 @@ module WebServer
       def default_message
         msg = "Content-Type: #{content_type}\n"
         msg << "Content-Length: #{content_length}\n"
+        msg << "Connection: #{@resource.conf.timeout ? 'keep-alive' : 'close'}\n"
         msg << "\r\n"
         msg << (@resource.contents || @error_body)
 

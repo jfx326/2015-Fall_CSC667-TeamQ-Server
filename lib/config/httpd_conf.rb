@@ -2,7 +2,7 @@ require_relative 'configuration'
 
 module WebServer
   class HttpdConf < Configuration
-    attr_reader :server_root, :document_root, :directory_index, :port, :log_file, :access_file_name, :script_aliases, :aliases
+    attr_reader :server_root, :document_root, :directory_index, :port, :log_file, :access_file_name, :script_aliases, :aliases, :max_requests, :timeout
 
     #TODO: Errors - malformed syntax, nonexistent properties && Reduce size of this method
     def initialize(httpd_file_content)
@@ -46,6 +46,10 @@ module WebServer
           @log_file = value
         when "AccessFileName"
           @access_file_name = value
+        when "MaxKeepAliveRequests"
+          @max_requests = value.to_i
+        when "KeepAliveTimeout"
+          @timeout = value.to_i
         when "ScriptAlias"
           @script_aliases.push(value)
           @script_alias_path[value] = value_path

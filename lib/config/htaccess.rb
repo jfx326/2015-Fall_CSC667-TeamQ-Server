@@ -6,7 +6,6 @@ module WebServer
 
     def initialize(htaccess_file_content)      
       super(htaccess_file_content)
-      @credentials = Hash.new
 
       parse
     end

@@ -34,16 +34,16 @@ module WebServer
 
     def parse_htpasswd
       #TODO: Needs error checking
-      passwdFile = File.open(@htaccess.auth_user_file, 'r')
+      htpasswd = File.open(@htaccess.auth_user_file, 'r')
 
-      passwdFile.each do |pair|
+      htpasswd.each do |pair|
         pair.chomp!
         user, passwd = pair.split(':')
 
         @credentials[user] = passwd
       end
 
-      passwdFile.close
+      htpasswd.close
     end
 
     def find_access_files(directories)    

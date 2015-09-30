@@ -25,16 +25,12 @@ module WebServer
     def start
       port = options[:httpd_conf].port || DEFAULT_PORT
       @server ||= TCPServer.open(port)
-
       puts "Starting server on localhost:#{port}\n\n"
 
-      loop do 
+      loop do
         socket = @server.accept
-
-        Thread.new do
-          Worker.new(socket, self)
-        end
-      end 
+        Thread.new { Worker.new(socket, self) }
+      end
     end
 
     private

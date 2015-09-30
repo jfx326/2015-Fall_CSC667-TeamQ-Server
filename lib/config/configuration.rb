@@ -1,7 +1,10 @@
 module WebServer
   class Configuration
+    attr_reader :errors
+
     def initialize(file_content)
       @file_content = file_content
+      @errors = Array.new
     end
 
     def parse

@@ -23,17 +23,27 @@ module WebServer
     end
 
     def start
-      port = options[:httpd_conf].port || DEFAULT_PORT
-      @server ||= TCPServer.open(port)
-      puts "Starting server on localhost:#{port}\n\n"
+      raise LoadError if (@options[:httpd_conf].errors.count > 0)
+
+      server
 
       loop do
         socket = @server.accept
+
         Thread.new { Worker.new(socket, self) }
       end
+    rescue LoadError
+      puts "Aborting server start - configuration errors"
+
+      @options[:httpd_conf].errors.map { |e| puts e.message }
     end
 
-    private
+    def server
+      port = options[:httpd_conf].port || DEFAULT_PORT
+      @server ||= TCPServer.open(port)
+
+      puts "Starting server on localhost:#{port}\n\n"
+    end
   end
 end
 

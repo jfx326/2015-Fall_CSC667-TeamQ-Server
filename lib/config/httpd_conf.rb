@@ -10,6 +10,7 @@ module WebServer
 
       set_defaults
       parse
+      validate
     end
 
     def set_defaults
@@ -36,8 +37,10 @@ module WebServer
       case property
         when "ServerRoot"
           @server_root = value
+
         when "DocumentRoot"
           @document_root = value
+
         when "DirectoryIndex"
           @directory_index = value              
         when "Listen"
@@ -56,6 +59,8 @@ module WebServer
         when "Alias"
           @aliases.push(value)
           @alias_path[value] = value_path
+        else
+          @errors.push(Error.new("htttp.conf Error: Unrecognised or Invalid directive"))
       end
     end
 
@@ -65,6 +70,13 @@ module WebServer
 
     def alias_path(path)
       @alias_path[path]
+    end
+
+    def validate
+      @errors.push(Error.new("htttp.conf Error: Invalid ServerRoot path")) if !File.exist?(@server_root)
+      @errors.push(Error.new("htttp.conf Error: ServerRoot path can not be a file")) if File.file?(@server_root)
+      @errors.push(Error.new("htttp.conf Error: Invalid DocumentRoot path")) if !File.exist?(@document_root)
+      @errors.push(Error.new("htttp.conf Error: DocumentRoot path can not be a file")) if File.file?(@document_root)
     end
   end
 end

@@ -2,14 +2,10 @@ module WebServer
   class Logger
 
     def initialize(log_file_path, options={})
-      @log_file = retrieve(log_file_path)
+      @log_file = File.open(log_file_path, 'a')
       @options = options
 
       @message = String.new
-    end
-
-    def retrieve(log_file_path)
-      File.open(log_file_path, 'a')
     end
 
     # Log a message using the information from Request and 

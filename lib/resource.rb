@@ -18,10 +18,8 @@ module WebServer
     end
 
     def resolve
-      #TODO: Check if this will get marked down since it return //
       @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
-      #TODO: Why does or work here and || doesn't?
       @absolute_path << @conf.directory_index if @absolute_path[-1] == '/'
 
       return @absolute_path
@@ -44,12 +42,14 @@ module WebServer
       if @script
         execute
       else
-        file = File.open(@absolute_path, 'rb')
+        file = File.open(@absolute_path)
         @contents = file.read
         file.close
 
         return 200
       end
+    rescue
+       return Error.new('Unable to open resource', 500)
     end
 
     def execute
@@ -63,7 +63,7 @@ module WebServer
 
       return 200
     rescue
-      return Error.new('CGI Script Execution Error', 500)
+      return Error.new('Script Execution Error', 500)
     end
 
     def create
@@ -95,7 +95,6 @@ module WebServer
       end
     end
 
-    #TODO: Check if this should exist. Seriously schould combine the two
     def aliased?
       @conf.aliases.each do |path_alias|
         if @request.uri.include? path_alias

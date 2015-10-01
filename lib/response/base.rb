@@ -4,10 +4,9 @@ module WebServer
       attr_reader :version, :code
 
       def initialize(resource, options={})
-        @version = DEFAULT_HTTP_VERSION #TODO: Should this be derived from resource/request
+        @version = DEFAULT_HTTP_VERSION
         @code = 200
-
-        @resource = resource #TODO: Need to figure out how the encapsulation works with this being passed around everywhere
+        @resource = resource
       end
 
       def to_s

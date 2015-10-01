@@ -14,7 +14,6 @@ module WebServer
       mime = line.split(' ')
 
       if mime.size > 1
-        #line.split will populate types array from index 1 onwards
         mime[1..-1].each do |extension|
           @mime_types[extension] = mime[0]
         end

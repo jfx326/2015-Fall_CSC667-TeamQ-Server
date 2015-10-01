@@ -8,8 +8,8 @@ module WebServer
       end
 
       def message
-        msg = "Connection: #{@resource.conf.timeout ? 'keep-alive' : 'close'}\n"
-        msg << "\r\n"
+        msg = "Content-Length: 0\n"
+        msg << "Connection: #{@resource.conf.timeout ? 'keep-alive' : 'close'}\n\r\n"
 
         return msg
       end

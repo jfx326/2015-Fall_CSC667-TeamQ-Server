@@ -20,7 +20,9 @@ module WebServer
     def resolve
       @absolute_path = aliased? || script_aliased? || (@conf.document_root + @request.uri)
 
-      @absolute_path << @conf.directory_index if @absolute_path[-1] == '/'
+      if !@absolute_path.include?('.') && !@script
+        @absolute_path << "/#{@conf.directory_index}"
+      end
 
       return @absolute_path
     end

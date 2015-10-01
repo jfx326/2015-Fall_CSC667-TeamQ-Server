@@ -7,11 +7,12 @@ module WebServer
         @code = 401
       end
 
-      def to_s
-        s = head
-        s << "WWW-Authenticate: Basic realm=\"#{@resource.contents}\"\r\n"
+      def message
+        return "WWW-Authenticate: Basic realm=\"#{@resource.contents}\"\n\r\n"
+      end
 
-        return s
+      def content_length
+        0
       end
     end
   end

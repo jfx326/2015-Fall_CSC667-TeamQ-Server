@@ -9,11 +9,7 @@ module WebServer
     end
 
     def retrieve(log_file_path)
-      if File.exist?(log_file_path)
-        return File.open(log_file_path, 'a')
-      else
-        return File.new(log_file_path, 'a')
-      end
+      File.open(log_file_path, 'a')
     end
 
     # Log a message using the information from Request and 

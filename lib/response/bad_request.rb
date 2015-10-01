@@ -2,7 +2,7 @@ module WebServer
   module Response
     # Class to handle 400 responses
     class BadRequest < Base
-      def initialize(resource=nil, options={})
+      def initialize(resource=nil)
         super(resource)
         @code = 400
 

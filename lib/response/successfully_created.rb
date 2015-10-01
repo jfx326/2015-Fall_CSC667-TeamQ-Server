@@ -2,7 +2,7 @@ module WebServer
   module Response
     # Class to handle 201 responses
     class SuccessfullyCreated < Base
-      def initialize(resource, options={})
+      def initialize(resource)
         super(resource)
         @code = 201
       end

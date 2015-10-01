@@ -26,7 +26,9 @@ module WebServer
     module Factory
 
       def self.create(resource)
-        case resource.process
+        result = resource.process
+
+        case result
           when 200
             Response::Base.new(resource)
           when 201
@@ -42,12 +44,12 @@ module WebServer
           when 404
             Response::NotFound.new(resource)
           when Error
-            self.error(resource, Error)
+            self.error(resource, result)
         end
       end
 
       def self.error(resource, error_object)
-        Response::ServerError.new(resource, exception: error_object)
+        Response::ServerError.new(resource, error: error_object)
       end
     end
   end

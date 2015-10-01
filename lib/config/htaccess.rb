@@ -8,6 +8,7 @@ module WebServer
       super(htaccess_file_content)
 
       parse
+      validate
     end
 
     def parse_line(line)
@@ -15,7 +16,6 @@ module WebServer
 
       value = removeQuotes(value)
 
-      #TODO: should do some error checking on this
       case key
         when 'AuthUserFile'
           @auth_user_file = value
@@ -24,7 +24,16 @@ module WebServer
         when 'AuthName'
           @auth_name = value
         when 'Require'
+          #Specific users specified in format 'Require: user jrob' -- split(' ').last will return the required user
           @require_user = (value == 'valid-user') ? value : value.split(' ').last
+      end
+    end
+
+    def validate
+      if !File.exist?(@auth_user_file)
+        msg = 'htaccess Error: Invalid AuthUserFile path'
+        @errors.push(Error.new(msg))
+        puts msg
       end
     end
   end

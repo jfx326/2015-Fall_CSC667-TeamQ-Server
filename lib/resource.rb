@@ -89,6 +89,7 @@ module WebServer
       if authorization != nil
         encrypted_string = authorization.split(' ').last
 
+        return Error.new('Unable to Authenticate', 500) if @auth_browser.htaccess.errors.count > 0
         return @auth_browser.authorized?(encrypted_string) ? 200 : 403
       else
         @contents = @auth_browser.htaccess.auth_name

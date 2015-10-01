@@ -33,7 +33,6 @@ module WebServer
     end
 
     def parse_htpasswd
-      #TODO: Needs error checking
       htpasswd = File.open(@htaccess.auth_user_file, 'r')
 
       htpasswd.each do |pair|
